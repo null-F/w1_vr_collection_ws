@@ -1,0 +1,10 @@
+[Unit]
+Description=Prepare LinkerHand glove USB driver
+After=systemd-udev-trigger.service
+Before=linkerhand-w1-glove-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/dexforce/linkerhand/repos/w1_glove_integration/prepare_glove_usb.sh
+RemainAfterExit=yes
+TimeoutStartSec=30

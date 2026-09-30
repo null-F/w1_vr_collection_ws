@@ -1,0 +1,4 @@
+1789590788.204133 [79]     python: config: //CycloneDDS/Domain/General: 'NetworkInterfaceAddress': deprecated element (CYCLONEDDS_URI+0 line 1)
+[ERROR] [1789590798.681516301] [w1_mcap_recorder]: Not recording; use status for the previous result
+1789590809.834303 [79]     python: config: //CycloneDDS/Domain/General: 'NetworkInterfaceAddress': deprecated element (CYCLONEDDS_URI+0 line 1)
+1789590819.628415 [79]     python: config: //CycloneDDS/Domain/General: 'NetworkInterfaceAddress': deprecated element (CYCLONEDDS_URI+0 line 1)

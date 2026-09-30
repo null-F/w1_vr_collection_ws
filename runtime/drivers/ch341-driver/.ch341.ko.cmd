@@ -1,0 +1,1 @@
+cmd_/home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.ko := ld -r -EL  -maarch64elf -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.ko /home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.o /home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.mod.o;  true

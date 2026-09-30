@@ -1,0 +1,1 @@
+cmd_/home/dexforce/linkerhand/runtime/drivers/linux-5.15.148-ch341/modules.order := {   echo /home/dexforce/linkerhand/runtime/drivers/linux-5.15.148-ch341/ch341.ko; :; } | awk '!x[$$0]++' - > /home/dexforce/linkerhand/runtime/drivers/linux-5.15.148-ch341/modules.order

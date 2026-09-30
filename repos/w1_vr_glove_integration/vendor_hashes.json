@@ -1,0 +1,14 @@
+{
+  "src/backend/web.py": "0190003b16d42cded7c9a94f3efede179766f13c0bf14893319e30d6c433dc2a",
+  "src/backend/https_server.py": "39714e072c7e99b33a6715f0203336025e122b4c35afe8dfbdad9a77b7f94808",
+  "src/frontend/input/gestureRecognizer.js": "55cdba6a7d2cec6ea51f3c96662bb8c01f19934a32754847015c8285413d7c76",
+  "src/frontend/input/controllerSnapshot.js": "2926cf7347e1516aea0fde3a354dd42b15038ed05369c80bb7259c21894bfb59",
+  "src/backend/core/protocols.py": "63d7fe8ddaf978b2c24f93c8174d37922ec67c2a7846160905fefd753b37f7b1",
+  "src/backend/pose/low_freq_server.py": "5ae52d222db1a6049669b66d31d619fe84b65f8d0568873099ea537e61507d7f",
+  "src/frontend/MessageToast.js": "9014b4b353109ddb0e66a79959bc1dd61714966a1dc23db9c2cb740d3f1e738c",
+  "src/frontend/utils/recordState.js": "9a1e5047b0f6f42bc99bab6ea4de1bd63734ec346b5bef0355feffe140f24313",
+  "src/backend/recording/button_controller.py": "d342d3fd3b04c9916a6e9ea322c1c4b991695f48e46a9b69191eabe7604e4394",
+  "src/backend/recording/session_controller.py": "c6855e2e19569ba51e0c83ef0adc53c72455f0f3c8d7e7530b6ba86d60d9f728",
+  "src/backend/pose/message_handlers.py": "e02a1ffbb2359850a92e090942906730820fd311df5e4e764a3ee4b174c170bb",
+  "src/backend/pose/pose_server.py": "224d538e7c7c7af374ea828ebbb2ccae492dfae18a5bfb92b60968c6657bc577"
+}

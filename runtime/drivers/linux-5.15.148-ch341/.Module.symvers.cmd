@@ -1,0 +1,1 @@
+cmd_/home/dexforce/linkerhand/runtime/drivers/linux-5.15.148-ch341/Module.symvers := sed 's/\.ko$$/\.o/' /home/dexforce/linkerhand/runtime/drivers/linux-5.15.148-ch341/modules.order | scripts/mod/modpost -m   -o /home/dexforce/linkerhand/runtime/drivers/linux-5.15.148-ch341/Module.symvers -e -i Module.symvers   -T -

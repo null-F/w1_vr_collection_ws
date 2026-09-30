@@ -1,0 +1,1 @@
+cmd_/home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.mod := printf '%s\n'   ch341.o | awk '!x[$$0]++ { print("/home/dexforce/linkerhand/runtime/drivers/ch341-driver/"$$0) }' > /home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.mod

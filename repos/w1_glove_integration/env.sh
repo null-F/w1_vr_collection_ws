@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+LINKER_W1_ROOT=/home/dexforce/linkerhand
+set +u
+source /opt/ros/humble/setup.bash
+source /home/dexforce/w1/install/setup.bash
+source "$LINKER_W1_ROOT/runtime/venvs/glove-humble/bin/activate"
+set -u
+export ROS_DOMAIN_ID=20
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export ROS_LOCALHOST_ONLY=0
+export CYCLONEDDS_URI='<CycloneDDS><Domain><General><NetworkInterfaceAddress>192.168.20.20</NetworkInterfaceAddress><AllowMulticast>spdp</AllowMulticast></General></Domain></CycloneDDS>'
+export PYTHONDONTWRITEBYTECODE=1
+export ROS_LOG_DIR="$LINKER_W1_ROOT/runtime/logs/ros"
+export PYTHONPATH="$LINKER_W1_ROOT/repos/linkerhand_ros_teleop/src/linkerhand_retarget:${PYTHONPATH:-}"
+mkdir -p "$ROS_LOG_DIR"

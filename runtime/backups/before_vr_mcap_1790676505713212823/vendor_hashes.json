@@ -1,0 +1,8 @@
+{
+  "src/backend/web.py": "0190003b16d42cded7c9a94f3efede179766f13c0bf14893319e30d6c433dc2a",
+  "src/backend/https_server.py": "39714e072c7e99b33a6715f0203336025e122b4c35afe8dfbdad9a77b7f94808",
+  "src/frontend/input/gestureRecognizer.js": "55cdba6a7d2cec6ea51f3c96662bb8c01f19934a32754847015c8285413d7c76",
+  "src/frontend/input/controllerSnapshot.js": "2926cf7347e1516aea0fde3a354dd42b15038ed05369c80bb7259c21894bfb59",
+  "src/backend/core/protocols.py": "63d7fe8ddaf978b2c24f93c8174d37922ec67c2a7846160905fefd753b37f7b1",
+  "src/backend/pose/low_freq_server.py": "5ae52d222db1a6049669b66d31d619fe84b65f8d0568873099ea537e61507d7f"
+}

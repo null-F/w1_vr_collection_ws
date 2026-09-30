@@ -1,0 +1,28 @@
+{
+  "backup": "/home/dexforce/linkerhand/runtime/backups/before_vr_mcap_1790676505713212823",
+  "before_files": [
+    "README.md",
+    "vendor_hashes.json",
+    "patch_runtime.py",
+    "sitecustomize.py"
+  ],
+  "unit_links": {
+    "/etc/systemd/system/linkerhand-w1-mcap.service": "/home/dexforce/linkerhand/repos/w1_vr_glove_integration/linkerhand-w1-mcap.service",
+    "/etc/systemd/system/dexe-tele.service.d/60-linkerhand-vr-mcap.conf": "/home/dexforce/linkerhand/repos/w1_vr_glove_integration/60-linkerhand-vr-mcap.conf"
+  },
+  "deployed_hashes": {
+    "mcap_rpc.py": "85a91af258a25d4b19a264b2a5be100c78e492b90d9a96f83b9246d7082f652b",
+    "README.md": "107a08e1c07a2519d77dc72af14ddf21e809afb1c855ee0f5771a89c38ee08b5",
+    "mcap_bridge.py": "e9bda5b0469c96a642f268c03f99e48c840571e0ec900ed20dc555cf3a91a700",
+    "vendor_hashes.json": "b22dccf47e3070fc055172790800b697a8f6db04ab6bb9763f55d3642c53700a",
+    "rollback_mcap.py": "ae7ac5e60d54cb5de1be94a2bee017c7063fe5fc4dcb15823fef9b44e06c9579",
+    "mcap_settings.json": "ff55cfd1983723f7ad8b335dcc7638013db8b75bebef19417fb2db2db9ec8bb2",
+    "linkerhand-w1-mcap.service": "9c9ed432b01570b44bb9344d2ad513d38ea4fd5839d75f5c0926901e1eaa7f13",
+    "mcap_rpc.sh": "fea669e5e5858cbf5fdb0aad62500c7ebe9464d29cb4d8a6deb7094c470265dd",
+    "patch_runtime.py": "3a9f8db07e7f7dd8c4a863d1b4182ace4f3194f8ae6b1c3c47673a1af65b4b2e",
+    "60-linkerhand-vr-mcap.conf": "89387350a0f13f3cd23309dfcfa2f62d9d7754b365257f3bc69a33b42325f663",
+    "sitecustomize.py": "21c1bd5e80810f79c411a4f574003f4baab92a25b8b1db251e4226b8f6c23020",
+    "frontend/MessageToast.js": "b90e773ec645a2ce402daf8fcf83ca82ee1b223eec28858bd5aad77d754bf308",
+    "frontend/recordState.js": "8c122035b190f8ea24f19212cc2480beff96f5ac49e07f13b51af000ccb38015"
+  }
+}

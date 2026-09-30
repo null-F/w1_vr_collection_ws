@@ -1,0 +1,15 @@
+/camera/kfc_compressed:
+  reliability: best_effort
+  durability: volatile
+  history: keep_last
+  depth: 5
+/tf_static:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 10
+/robot_description:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1

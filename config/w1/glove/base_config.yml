@@ -1,0 +1,76 @@
+calibration:
+  allow_sample: false
+  fist_extend_ratio: 0.5
+  show_fist: true
+debug:
+  joint_motor_debug_l: false
+  joint_motor_debug_r: false
+  joint_pub_debug: false
+  linkerforce_packet_log_debug: false
+  mapper_debug: false
+  motor_output_limit_debug: false
+force_feedback:
+  enabled: false
+  slope_gain: 1.0
+humanset:
+  bodyfile: body_unity_pose
+  targethandfile: human_hand_info
+linkereg:
+  password: i
+  port: null
+motor_output:
+  OUTPUT_RUNTIME_LIMITS:
+    max_runtime_ms: 300.0
+  frame_rate: 30
+mujoco:
+  enabled: false
+  fps: 30
+  hands: auto
+  model_rotate_rpy:
+  - 0
+  - -0.785398163397
+  - -1.57079632679
+  model_scale: 5.0
+  model_translate_xyz:
+  - 0
+  - 0
+  - -0.5
+netpub:
+  ip: 192.168.11.33
+  port: 20008
+serial:
+  auto_scan: false
+  baudrates:
+  - 2000000
+  exclude_ports: []
+  left:
+    baudrate: 2000000
+    port: /dev/ttyUSB3
+  right:
+    baudrate: 2000000
+    port: /dev/ttyUSB4
+  serial_debug: false
+system:
+  can:
+    bitrate: 1000000
+    dofs: 25
+    id: 40
+  datasource_type: motion
+  leftpub: true
+  motion_device: eric
+  motion_type: linkerforce
+  retargeting_type: projection
+  rightpub: true
+  robotname_l: l6
+  robotname_r: l6
+  sapientype: left
+  usecan: false
+  usegui: false
+  usenetpub: false
+  usesapien: false
+  useudp: false
+  useudpserver: false
+udp:
+  ip: 127.0.0.1
+  port: 9012
+  serverport: 5551

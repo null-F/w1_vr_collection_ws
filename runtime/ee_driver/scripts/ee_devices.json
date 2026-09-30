@@ -1,0 +1,6 @@
+{
+  "left_ee": "Linker_L6",
+  "left_ee_bus": "rs485",
+  "right_ee": "Linker_L6",
+  "right_ee_bus": "rs485"
+}

@@ -1,0 +1,13 @@
+[INFO] [1789590824.208188678] [rosbag2_recorder]: Press SPACE for pausing/resuming
+[INFO] [1789590824.212850967] [rosbag2_recorder]: Listening for topics...
+[INFO] [1789590824.212890296] [rosbag2_recorder]: Event publisher thread: Starting
+[INFO] [1789590824.213749275] [rosbag2_recorder]: Recording...
+[INFO] [1789590824.328259195] [rosbag2_recorder]: Subscribed to topic '/camera/kfc_calib_data'
+[INFO] [1789590824.334650643] [rosbag2_recorder]: Overriding subscription profile for /camera/kfc_compressed
+[INFO] [1789590824.339128867] [rosbag2_recorder]: Subscribed to topic '/camera/kfc_compressed'
+[INFO] [1789590824.351642608] [rosbag2_recorder]: Subscribed to topic '/feedback/ee/left'
+[INFO] [1789590824.358524010] [rosbag2_recorder]: Subscribed to topic '/linkerhand/w1/ee/left/command'
+[INFO] [1789590824.363428091] [rosbag2_recorder]: Subscribed to topic '/feedback/joint'
+[INFO] [1789590825.549094774] [rosbag2_cpp]: Writing remaining messages from cache to the bag. It may take a while
+[INFO] [1789590825.550444763] [rosbag2_recorder]: Event publisher thread: Exiting
+[INFO] [1789590825.550622427] [rosbag2_recorder]: Recording stopped

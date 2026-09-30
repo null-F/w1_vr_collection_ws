@@ -1,0 +1,31 @@
+{
+  "units": {
+    "dexe-devices.service": {
+      "enabled": "enabled",
+      "active": "inactive"
+    },
+    "dexe-tele.service": {
+      "enabled": "disabled",
+      "active": "active"
+    },
+    "dexe-tele.timer": {
+      "enabled": "disabled",
+      "active": "inactive"
+    },
+    "dexe-auto.timer": {
+      "enabled": "enabled",
+      "active": "active"
+    },
+    "dexe-act.timer": {
+      "enabled": "disabled",
+      "active": "inactive"
+    }
+  },
+  "vendor_units": {
+    "/etc/systemd/system/dexe-devices.service": "d6b83d887a641b6811c8e488be8d521ddf8fb1756e06cd73e78754040d6f5d8d",
+    "/etc/systemd/system/dexe-tele.service": "623760df60737e7e502ec2c46e25eab09a071bf13729b7de41c9e660edb27059",
+    "/etc/systemd/system/dexe-tele.timer": "c21ef9784761da35f3c73932e1eb044e50eb23f3d4afb21ba7c20f7969151462",
+    "/etc/systemd/system/dexe-auto.timer": "c2d5096708c17159db14ac78b7bb5699227340639543829801b5096998e958f1",
+    "/etc/systemd/system/dexe-act.timer": "b98ab8f5d7a7fd915c2d944b196455b77c9b4886aad192a6f0aa56aea2ccbb48"
+  }
+}

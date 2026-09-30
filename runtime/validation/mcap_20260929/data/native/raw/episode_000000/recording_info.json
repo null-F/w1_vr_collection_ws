@@ -1,0 +1,127 @@
+{
+  "valid": true,
+  "errors": [],
+  "validation_scope": "summary_schema_counts_and_first_last_message",
+  "topics_summary": {
+    "/linkerhand/w1/ee/left/command": 43,
+    "/feedback/ee/left": 43,
+    "/camera/kfc_calib_data": 43,
+    "/camera/kfc_compressed": 43,
+    "/feedback/joint": 43
+  },
+  "missing_topics": [
+    "/feedback/robot_server_state",
+    "/feedback/ee/right",
+    "/feedback/odom",
+    "/feedback/omni_chassis_motor",
+    "/camera/kfc_status",
+    "/feedback/robot_status",
+    "/supervisor/system_mode",
+    "/supervisor/system_status",
+    "/tf",
+    "/control/joint_position",
+    "/linkerhand/w1/ee/right/command",
+    "/control/cmd_vel",
+    "/teleop/VR_head",
+    "/teleop/VR_left_hand",
+    "/teleop/VR_right_hand",
+    "/tf_static",
+    "/robot_description"
+  ],
+  "coverage_status": "partial",
+  "total_messages": 215,
+  "duration_sec": 4.200568562,
+  "files": [
+    {
+      "path": "raw_0.mcap",
+      "bytes": 69831,
+      "messages": 215
+    }
+  ],
+  "topics_config": [
+    {
+      "name": "/camera/kfc_calib_data",
+      "type": "std_msgs/msg/String",
+      "serialization_format": "cdr",
+      "offered_qos_profiles": "- history: 1\n  depth: 10\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+    },
+    {
+      "name": "/camera/kfc_compressed",
+      "type": "sensor_msgs/msg/CompressedImage",
+      "serialization_format": "cdr",
+      "offered_qos_profiles": "- history: 1\n  depth: 10\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+    },
+    {
+      "name": "/feedback/ee/left",
+      "type": "end_effector_interfaces/msg/EEFeedback",
+      "serialization_format": "cdr",
+      "offered_qos_profiles": "- history: 1\n  depth: 10\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+    },
+    {
+      "name": "/linkerhand/w1/ee/left/command",
+      "type": "end_effector_interfaces/msg/EEJointControl",
+      "serialization_format": "cdr",
+      "offered_qos_profiles": "- history: 1\n  depth: 10\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+    },
+    {
+      "name": "/feedback/joint",
+      "type": "sensor_msgs/msg/JointState",
+      "serialization_format": "cdr",
+      "offered_qos_profiles": "- history: 1\n  depth: 10\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+    }
+  ],
+  "save_status": "saved",
+  "stop_reason": "stop",
+  "worker": {
+    "reason": "signal",
+    "returncode": 0,
+    "forced": false,
+    "finished_time_ns": 1789590795259599785
+  },
+  "episode_dir": "/home/dexforce/linkerhand/runtime/validation/mcap_20260929/data/native/raw/episode_000000",
+  "started_wall_ns": 1789590789490181008,
+  "finished_wall_ns": 1789590795411086545,
+  "warnings": [
+    "/feedback/robot_server_state: no publisher at start",
+    "/feedback/ee/right: no publisher at start",
+    "/feedback/odom: no publisher at start",
+    "/feedback/omni_chassis_motor: no publisher at start",
+    "/camera/kfc_status: no publisher at start",
+    "/feedback/robot_status: no publisher at start",
+    "/supervisor/system_mode: no publisher at start",
+    "/supervisor/system_status: no publisher at start",
+    "/tf: no publisher at start",
+    "/control/joint_position: no publisher at start",
+    "/linkerhand/w1/ee/right/command: no publisher at start",
+    "/control/cmd_vel: no publisher at start",
+    "/teleop/VR_head: no publisher at start",
+    "/teleop/VR_left_hand: no publisher at start",
+    "/teleop/VR_right_hand: no publisher at start",
+    "/tf_static: no publisher at start",
+    "/robot_description: no publisher at start"
+  ],
+  "expected_topics": [
+    "/feedback/joint",
+    "/feedback/robot_server_state",
+    "/feedback/ee/left",
+    "/feedback/ee/right",
+    "/feedback/odom",
+    "/feedback/omni_chassis_motor",
+    "/camera/kfc_compressed",
+    "/camera/kfc_calib_data",
+    "/camera/kfc_status",
+    "/feedback/robot_status",
+    "/supervisor/system_mode",
+    "/supervisor/system_status",
+    "/tf",
+    "/control/joint_position",
+    "/linkerhand/w1/ee/left/command",
+    "/linkerhand/w1/ee/right/command",
+    "/control/cmd_vel",
+    "/teleop/VR_head",
+    "/teleop/VR_left_hand",
+    "/teleop/VR_right_hand",
+    "/tf_static",
+    "/robot_description"
+  ]
+}

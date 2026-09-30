@@ -1,0 +1,5 @@
+{
+  "source": "linkerhand_data_collection_ws/src/linkerhand_ros_teleop",
+  "commit": "900a34244b04b9d0d32d1ec00edb2b739cebf95e",
+  "scope": "L6 left/right assets only; all mapping code retained; independent deployment copy"
+}

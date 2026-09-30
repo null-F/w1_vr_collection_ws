@@ -1,0 +1,20 @@
+make: Entering directory '/home/dexforce/linkerhand/runtime/drivers/ch341-driver'
+make -C /home/dexforce/linkerhand/runtime/drivers/rt-headers/usr/src/linux-headers-5.15.148-rt-tegra-ubuntu22.04_aarch64/3rdparty/canonical/linux-jammy/kernel-source  M=/home/dexforce/linkerhand/runtime/drivers/ch341-driver modules
+make[1]: Entering directory '/home/dexforce/linkerhand/runtime/drivers/rt-headers/usr/src/linux-headers-5.15.148-rt-tegra-ubuntu22.04_aarch64/3rdparty/canonical/linux-jammy/kernel-source'
+  CC [M]  /home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.o
+  MODPOST /home/dexforce/linkerhand/runtime/drivers/ch341-driver/Module.symvers
+  CC [M]  /home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.mod.o
+  LD [M]  /home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.ko
+make[1]: Leaving directory '/home/dexforce/linkerhand/runtime/drivers/rt-headers/usr/src/linux-headers-5.15.148-rt-tegra-ubuntu22.04_aarch64/3rdparty/canonical/linux-jammy/kernel-source'
+=== The target driver file has been generated ===
+-rw-rw-r-- 1 dexforce dexforce 170424 Sep 17 00:50 ch341.ko
+make: Leaving directory '/home/dexforce/linkerhand/runtime/drivers/ch341-driver'
+make: Warning: File 'Makefile' has modification time 1076013 s in the future
+warning: the compiler differs from the one used to build the kernel
+  The kernel was built by: gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+  You are using:           gcc (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0
+make[2]: Warning: File '/home/dexforce/linkerhand/runtime/drivers/ch341-driver/Makefile' has modification time 1076011 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File '/home/dexforce/linkerhand/runtime/drivers/ch341-driver/Makefile' has modification time 1076009 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make: warning:  Clock skew detected.  Your build may be incomplete.

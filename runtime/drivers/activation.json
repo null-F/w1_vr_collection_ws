@@ -1,0 +1,16 @@
+{
+  "brltty_before": "active",
+  "systemctl": {
+    "exit": 0,
+    "stderr": ""
+  },
+  "insmod": {
+    "exit": 0,
+    "stderr": ""
+  },
+  "ports": [
+    "/dev/ttyCH341USB1",
+    "/dev/ttyCH341USB0"
+  ],
+  "kernel_tail": "PHL: rtw_hal_reset: phy_idx(0) band_idx(0)\nPHL: TX Un-Pause - Reason(9) for band-0, final tx_cfg(0x0100)\nPHL: [DBG_RFK]rtw_hal_rf_chl_rfk_trigger: phy_idx(0), rt_type(2)\nPHL: [DBG_RFK]rtw_hal_rf_chl_rfk_trigger: RFK take 0 (ms)\nPHL: rtw_hal_set_ch_bw: Switch chdef done, rt_type:Y, frc_switch(0)\nPHL: [SCAN] band:1 chan:56 bw:0 offset:0 duration:100 (ms)\nPHL: _phl_mrc_module_swch_done_hdlr[0]: MSG_EVT_SWCH_DONE\nPHL: \t[cmd_scan]:: TimeIntvl: 5805 \nRTW: scan_ch_ready_cb: band=1, ch=56\nPHL: \tMSG_EVT_SWCH_DONE :: duration=100\nPHL: _cmd_scan_timer: band_idx=0\nPHL: \t[cmd_scan]:: TimeIntvl: 5909 \nPHL: [0]MSG_EVT_LISTEN_STATE_EXPIRE \nPHL: _phl_mrc_module_swch_start_hdlr[0]: MSG_EVT_SWCH_START\nPHL: \t[cmd_scan]:: TimeIntvl: 5909 \nPHL: [0]MSG_EVT_SWCH_START \nPHL: _cmd_scan_select_chnl:[0] repeat[0] ch_idx=[19], remain=[21], ch_number=60, scan_mode= Non-OP\nPHL: rtw_hal_reset: phy_idx(0) band_idx(0)\nPHL: TX Pause - Reason(9) for band-0, final tx_cfg(0x0000)\nPHL: Using band:1 central channel 60 for primary channel 60 BW 0\n"
+}

@@ -1,0 +1,8 @@
+﻿__pycache__/
+*.pyc
+runtime/venvs/
+runtime/logs/
+runtime/drivers/rt-headers/
+runtime/*.lock
+runtime/*.pid
+runtime/mcap_recorder_state.json

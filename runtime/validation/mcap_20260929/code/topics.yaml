@@ -1,0 +1,32 @@
+continuous:
+  - /feedback/joint
+  - /feedback/robot_server_state
+  - /feedback/ee/left
+  - /feedback/ee/right
+  - /feedback/odom
+  - /feedback/omni_chassis_motor
+  - /camera/kfc_compressed
+  - /camera/kfc_calib_data
+  - /camera/kfc_status
+  - /feedback/robot_status
+  - /supervisor/system_mode
+  - /supervisor/system_status
+  - /tf
+command_or_event:
+  - /control/joint_position
+  - /linkerhand/w1/ee/left/command
+  - /linkerhand/w1/ee/right/command
+  - /control/cmd_vel
+  - /teleop/VR_head
+  - /teleop/VR_left_hand
+  - /teleop/VR_right_hand
+static:
+  - /tf_static
+  - /robot_description
+optional:
+  - /feedback/battery_status
+  - /imu/chassis
+  - /imu/chassis/refined
+  - /diagnostics
+  - /diagnostics_agg
+  - /rosout

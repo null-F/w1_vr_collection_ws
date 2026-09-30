@@ -1,0 +1,91 @@
+{
+  "body_joint_names": [
+    "LEFT_J1"
+  ],
+  "head_calibration_raw": "test_calibration: true",
+  "head_stereo": {
+    "topic": "/camera/kfc_compressed",
+    "message_type": "sensor_msgs/msg/CompressedImage",
+    "encoding": "jpeg",
+    "width": 64,
+    "height": 32,
+    "layout": "left_right_side_by_side",
+    "per_eye_width": 32,
+    "per_eye_height": 32,
+    "observed_time_ns": 1789590822978517740
+  },
+  "device": {
+    "id": "w1-pc1",
+    "type": "Dexforce W1"
+  },
+  "hand": {
+    "model": "Linker_L6",
+    "dof": 6,
+    "position_unit": "normalized_0_100",
+    "action_topics": [
+      "/linkerhand/w1/ee/left/command",
+      "/linkerhand/w1/ee/right/command"
+    ],
+    "state_topics": [
+      "/feedback/ee/left",
+      "/feedback/ee/right"
+    ]
+  },
+  "topic_groups": {
+    "continuous": [
+      "/feedback/joint",
+      "/feedback/robot_server_state",
+      "/feedback/ee/left",
+      "/feedback/ee/right",
+      "/feedback/odom",
+      "/feedback/omni_chassis_motor",
+      "/camera/kfc_compressed",
+      "/camera/kfc_calib_data",
+      "/camera/kfc_status",
+      "/feedback/robot_status",
+      "/supervisor/system_mode",
+      "/supervisor/system_status",
+      "/tf"
+    ],
+    "command_or_event": [
+      "/control/joint_position",
+      "/linkerhand/w1/ee/left/command",
+      "/linkerhand/w1/ee/right/command",
+      "/control/cmd_vel",
+      "/teleop/VR_head",
+      "/teleop/VR_left_hand",
+      "/teleop/VR_right_hand"
+    ],
+    "static": [
+      "/tf_static",
+      "/robot_description"
+    ],
+    "optional": [
+      "/feedback/battery_status",
+      "/imu/chassis",
+      "/imu/chassis/refined",
+      "/diagnostics",
+      "/diagnostics_agg",
+      "/rosout"
+    ]
+  },
+  "warnings": [
+    "/feedback/robot_server_state: no publisher at start",
+    "/feedback/ee/right: no publisher at start",
+    "/feedback/odom: no publisher at start",
+    "/feedback/omni_chassis_motor: no publisher at start",
+    "/camera/kfc_status: no publisher at start",
+    "/feedback/robot_status: no publisher at start",
+    "/supervisor/system_mode: no publisher at start",
+    "/supervisor/system_status: no publisher at start",
+    "/tf: no publisher at start",
+    "/control/joint_position: no publisher at start",
+    "/linkerhand/w1/ee/right/command: no publisher at start",
+    "/control/cmd_vel: no publisher at start",
+    "/teleop/VR_head: no publisher at start",
+    "/teleop/VR_left_hand: no publisher at start",
+    "/teleop/VR_right_hand: no publisher at start",
+    "/tf_static: no publisher at start",
+    "/robot_description: no publisher at start"
+  ]
+}

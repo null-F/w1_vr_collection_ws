@@ -1,0 +1,20 @@
+[Unit]
+Description=LinkerHand W1 VR glove process and speech manager
+After=network-online.target linkerhand-w1-glove-usb.service
+Wants=network-online.target
+Requires=linkerhand-w1-glove-usb.service
+
+[Service]
+Type=simple
+User=dexforce
+WorkingDirectory=/home/dexforce/linkerhand
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 /home/dexforce/linkerhand/repos/w1_vr_glove_integration/glove_manager.py
+Restart=on-failure
+RestartSec=3
+KillMode=mixed
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,28 @@
+[
+  {
+    "case": "native_schema_and_partial_coverage",
+    "messages": 215,
+    "passed": true
+  },
+  {
+    "case": "service_failure_shell_exit",
+    "passed": true
+  },
+  {
+    "case": "resident_SIGTERM_finalizes",
+    "passed": true
+  },
+  {
+    "case": "resident_SIGKILL_child_shutdown_and_recovery",
+    "passed": true
+  },
+  {
+    "case": "unexpected_bag_exit_fails",
+    "passed": true
+  },
+  {
+    "case": "all_selected_streams_absent_allowed",
+    "count": 0,
+    "passed": true
+  }
+]

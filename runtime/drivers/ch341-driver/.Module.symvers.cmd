@@ -1,0 +1,1 @@
+cmd_/home/dexforce/linkerhand/runtime/drivers/ch341-driver/Module.symvers := sed 's/\.ko$$/\.o/' /home/dexforce/linkerhand/runtime/drivers/ch341-driver/modules.order | scripts/mod/modpost -m   -o /home/dexforce/linkerhand/runtime/drivers/ch341-driver/Module.symvers -e -i Module.symvers   -T -

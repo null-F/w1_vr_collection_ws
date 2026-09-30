@@ -1,0 +1,1 @@
+/home/dexforce/linkerhand/runtime/drivers/linux-5.15.148-ch341/ch341.o

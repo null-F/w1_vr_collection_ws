@@ -1,0 +1,16 @@
+[Unit]
+Description=LinkerHand W1 MCAP resident collector
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=dexforce
+WorkingDirectory=/home/dexforce/linkerhand
+ExecStart=/bin/bash /home/dexforce/linkerhand/repos/w1_mcap_collection/serve.sh
+Restart=on-failure
+RestartSec=3
+KillMode=mixed
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target

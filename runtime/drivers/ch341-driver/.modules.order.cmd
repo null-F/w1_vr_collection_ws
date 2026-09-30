@@ -1,0 +1,1 @@
+cmd_/home/dexforce/linkerhand/runtime/drivers/ch341-driver/modules.order := {   echo /home/dexforce/linkerhand/runtime/drivers/ch341-driver/ch341.ko; :; } | awk '!x[$$0]++' - > /home/dexforce/linkerhand/runtime/drivers/ch341-driver/modules.order

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT=/home/dexforce/linkerhand
+MODULE="$ROOT/runtime/drivers/ch341-driver/ch341.ko"
+test "$(uname -r)" = 5.15.148-rt-tegra || { echo 'Kernel changed; rebuild the glove driver for this kernel.' >&2; exit 1; }
+echo 'Temporarily blocking brltty-udev for this boot so replugging does not reclaim the gloves.'
+sudo systemctl mask --runtime --now brltty-udev.service
+if ! test -d /sys/module/ch341; then
+    test -f "$MODULE" || { echo "Missing glove driver: $MODULE" >&2; exit 1; }
+    sudo insmod "$MODULE"
+fi
+udevadm settle --timeout=5
+echo 'CH340/CH341 glove serial driver is ready.'
