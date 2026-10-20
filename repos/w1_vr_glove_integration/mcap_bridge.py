@@ -8,6 +8,11 @@ from glove_manager import Voice
 
 HERE=Path(__file__).resolve().parent
 OWNER=Path('/home/dexforce/linkerhand/runtime/vr_mcap_owner.json')
+_bridge=None
+
+
+def request_cancel():
+    if _bridge is not None:_bridge.ask_cancel()
 
 
 def rpc(command):
@@ -25,12 +30,20 @@ class Bridge:
         self.want=False;self.previous=False;self.grip=False;self.last_input=0.0
         self.episode=None;self.ws=None;self.worker=None;self.closed=False
         self.phase='idle';self.reason='button';self.error_at=0.0;self.last_poll=0.0
-        self.recover=OWNER.exists()
+        self.cancel_flag=False;self.recover=OWNER.exists()
+        global _bridge;_bridge=self
 
     def ensure_worker(self):
         if self.worker is None or self.worker.done():self.worker=asyncio.create_task(self.run())
 
+    def ask_cancel(self):
+        # Low-frequency dispatch runs on another thread. Only set the flag;
+        # the pose-server loop already polls it while a recording is active.
+        self.cancel_flag=True;self.want=False;self.reason='cancel'
+
     def observe(self,ws,pressed,grip):
+        if self.cancel_flag or self.phase=='cancelling' or self.reason=='cancel':
+            self.last_input=time.monotonic();self.previous=bool(pressed);self.ensure_worker();return
         if self.ws is not None and ws is not None and ws is not self.ws and (self.want or self.episode):return
         self.last_input=time.monotonic();self.grip=bool(grip)
         if pressed and not self.previous:
@@ -67,27 +80,55 @@ class Bridge:
             print('MCAP_SAVE_FAILED',repr(exc),flush=True)
             self.phase='error';self.episode=None;self.recover=OWNER.exists();self.error_at=time.monotonic()
 
+    async def discard(self):
+        self.phase='cancelling';self.want=False;self.reason='cancel'
+        await self.ui('linkerhand_mcap_record',action='cancel',reason='cancel')
+        try:
+            result=await asyncio.to_thread(self.runner,'cancel')
+            if result.get('save_status')!='cancelled':raise RuntimeError(str(result))
+            self.voice.say('本次采集任务已取消。')
+            print('MCAP_CANCELLED',json.dumps(result,ensure_ascii=False),flush=True)
+            self.episode=None;self.recover=False;self.phase='idle';self.ws=None;self.reason='button'
+        except Exception as exc:
+            self.want=False;self.reason='button'
+            await self.ui('data_save',success=False,error=str(exc))
+            self.voice.say('数据采集取消失败，请检查采集日志。')
+            print('MCAP_CANCEL_FAILED',repr(exc),flush=True)
+            if self.episode:self.phase='recording'
+            else:self.phase='error';self.recover=OWNER.exists();self.error_at=time.monotonic()
+        finally:
+            self.cancel_flag=False
+
     async def run(self):
         while not self.closed:
-            if self.want and time.monotonic()-self.last_input>3:
+            if self.cancel_flag and self.phase not in ('cancelling','saving','starting'):
+                self.want=False;self.reason='cancel'
+                if self.episode:
+                    await self.discard();continue
+                self.cancel_flag=False
+            if self.reason!='cancel' and self.want and time.monotonic()-self.last_input>3:
                 self.want=False;self.reason='vr_input_lost'
             if self.phase=='error' and time.monotonic()-self.error_at<5:
                 await asyncio.sleep(.1);continue
-            if self.recover:
+            if self.recover and self.reason!='cancel':
                 await self.finish()
-            elif self.episode and not self.want:
+            elif self.episode and not self.want and self.reason!='cancel':
                 await self.finish()
+            elif self.reason=='cancel' and self.episode:
+                await self.discard()
             elif self.want and not self.episode:
                 self.phase='starting'
                 try:
                     result=await asyncio.to_thread(self.runner,'start')
                     self.episode=result['episode_dir'];self.phase='recording'
-                    if self.want and self.grip and time.monotonic()-self.last_input<=3:
+                    if self.cancel_flag or self.reason=='cancel':
+                        await self.discard()
+                    elif self.want and self.grip and time.monotonic()-self.last_input<=3:
                         await self.ui('linkerhand_mcap_record',action='start',session_id=self.episode)
                         self.voice.say('数据采集已开启。')
                     else:self.want=False
                 except Exception as exc:
-                    self.want=False;self.recover=OWNER.exists();self.phase='error';self.error_at=time.monotonic()
+                    self.want=False;self.cancel_flag=False;self.recover=OWNER.exists();self.phase='error';self.error_at=time.monotonic()
                     self.voice.say('数据采集启动失败，请检查采集日志。')
                     await self.ui('data_status',error_msg='MCAP采集启动失败：'+str(exc))
                     print('MCAP_START_FAILED',repr(exc),flush=True)
@@ -95,7 +136,9 @@ class Bridge:
                 self.last_poll=time.monotonic()
                 try:
                     state=await asyncio.to_thread(self.runner,'status')
-                    if not state.get('recording') or state.get('episode_dir')!=self.episode:
+                    if self.cancel_flag or self.reason=='cancel':
+                        await self.discard()
+                    elif not state.get('recording') or state.get('episode_dir')!=self.episode:
                         self.want=False;self.reason='recorder_exit';await self.finish()
                 except Exception as exc:
                     print('MCAP_MONITOR_ERROR',repr(exc),flush=True)
@@ -104,10 +147,11 @@ class Bridge:
             await asyncio.sleep(.1)
 
     async def close(self):
-        self.want=False;self.reason='vr_shutdown'
+        if not (self.cancel_flag or self.reason=='cancel' or self.phase=='cancelling'):
+            self.want=False;self.reason='vr_shutdown'
         self.ensure_worker()
         deadline=time.monotonic()+110
-        while (self.phase in ('starting','saving') or self.episode or self.recover) and time.monotonic()<deadline:
+        while (self.phase in ('starting','saving','cancelling') or self.episode or self.recover) and time.monotonic()<deadline:
             await asyncio.sleep(.1)
         self.closed=True
         if self.worker and not self.worker.done():

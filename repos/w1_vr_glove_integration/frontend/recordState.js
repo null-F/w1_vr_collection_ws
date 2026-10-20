@@ -33,7 +33,7 @@ export function parseRecordMessage(msg) {
   if (action === "start" || action === "resume") {
     return createUpdate(RECORD_STATE_RECORDING, action);
   }
-  if (action === "stop") return createUpdate(RECORD_STATE_STOPPED, action);
+  if (action === "stop" || action === "cancel") return createUpdate(RECORD_STATE_STOPPED, action);
 
   if (msg.on === true || msg.recording === true) {
     return createUpdate(RECORD_STATE_RECORDING, "start");

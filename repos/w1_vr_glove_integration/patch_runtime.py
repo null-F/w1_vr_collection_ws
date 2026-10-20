@@ -14,6 +14,10 @@ class GloveControl:
         self.request_id = request_id
 
 
+class McapCancel:
+    pass
+
+
 def send_toggle(request_id):
     request = urllib.request.Request(MANAGER,
         json.dumps({'request_id': request_id}).encode(),
@@ -29,6 +33,8 @@ def patch_low_frequency(module):
             value = json.loads(raw)
         except (ValueError, TypeError):
             return original_decode(raw)
+        if isinstance(value, dict) and value.get('type') == 'linkerhand_mcap_cancel':
+            return McapCancel()
         if isinstance(value, dict) and value.get('type') == 'linkerhand_glove_control':
             request_id = value.get('request_id')
             if value.get('action') == 'toggle' and isinstance(request_id, str) and 1 <= len(request_id) <= 160:
@@ -41,6 +47,11 @@ def patch_low_frequency(module):
     def initialize(self, *args, **kwargs):
         original_dispatch = kwargs['message_dispatcher']
         async def dispatch(ws, msg, addr):
+            if isinstance(msg, McapCancel):
+                from mcap_bridge import request_cancel
+                request_cancel()
+                self.logger.info('LinkerHand MCAP cancel requested')
+                return
             if isinstance(msg, GloveControl):
                 try:
                     result = await asyncio.to_thread(send_toggle, msg.request_id)

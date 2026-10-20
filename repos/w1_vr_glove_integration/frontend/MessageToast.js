@@ -395,6 +395,9 @@ export function MessageToast(renderer, sendLowFreqMessage) {
         undefined,
         "warning",
       );
+    } else if (action === "cancel") {
+      isSavingData = false;
+      showL1BottomMsg("本次采集任务已取消", true, 2000);
     } else if (wasRecording) {
       isSavingData = true;
       showL1BottomMsg("record_saving", false, 2000);
@@ -570,7 +573,7 @@ export function MessageToast(renderer, sendLowFreqMessage) {
     if (window.VRMode === "calibration") return;
     if (isSavingData || !window.VRMode) return;
     if (isRecording) {
-      handleReturnToPosition();
+      sendLowFreq({ type: "linkerhand_mcap_cancel" });
       return;
     }
     dataDeleteFlow.trigger();

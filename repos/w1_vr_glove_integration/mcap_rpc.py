@@ -27,8 +27,8 @@ def brief(value):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('command',choices=['start','stop','status']);parser.add_argument('--task');a=parser.parse_args()
-    if a.command=='stop' and not OWNER.exists():
+    parser=argparse.ArgumentParser();parser.add_argument('command',choices=['start','stop','cancel','status']);parser.add_argument('--task');a=parser.parse_args()
+    if a.command in ('stop','cancel') and not OWNER.exists():
         print(json.dumps({'success':True,'result':{'save_status':'not_owned'}}));return 0
     node=None
     with (RUNTIME/'mcap_recorder.launch.lock').open('a') as lock:
@@ -83,12 +83,13 @@ def main():
                 result={'save_status':'not_owned'};ok=True
             elif state.get('recording'):
                 if not owned or state.get('episode_dir')!=owned:raise RuntimeError('Active episode is not owned by VR; refusing to stop it')
-                ok,result=call('stop_recording')
+                ok,result=call('cancel_recording' if a.command=='cancel' else 'stop_recording')
                 if result.get('episode_dir')==owned and result.get('save_status') in ['saved','failed','cancelled']:OWNER.unlink(missing_ok=True)
             else:
                 last=state.get('last_result') or {}
                 if owned and last.get('episode_dir')==owned:
-                    result=brief(last);ok=result.get('save_status')=='saved'
+                    result=brief(last)
+                    ok=result.get('save_status')==('cancelled' if a.command=='cancel' else 'saved')
                 else:
                     result={'save_status':'not_recording','error':'No matching active VR episode'};ok=False
                 OWNER.unlink(missing_ok=True)
