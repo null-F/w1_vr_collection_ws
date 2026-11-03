@@ -1,6 +1,8 @@
 # W1 PC1 L6 手套接入
 
-独立目录 `/home/dexforce/linkerhand`，原始手套代码版本900a342，ROS2 Humble / Python3.10。
+独立目录 `/home/dexforce/linkerhand`，W1 部署环境为 ROS2 Humble / Python3.10。
+默认使用新 FFG SDK `6da23b7`；旧 SDK `900a342` 保留用于显式回退。
+新上游声明 Jazzy/Python3.12，本工程的 Humble 接入需要目标机验证；详见 `SDK_MIGRATION.md`。
 不修改 `/home/dexforce/w1`。可与 VR 同时运行：手套只驱动 L6，不控制机械臂，不启用手套触觉反馈。
 
 ## 使用
@@ -10,7 +12,7 @@
 保持该终端打开。双手使用厂家速度100/100，对应原LinkerHand SDK的255/255速度档位。
 
 终端2运行 `bash /home/dexforce/linkerhand/repos/w1_glove_integration/start_gloves.sh`。
-按照原手套程序的终端提示完成三段标定；标定成功后开始跟随。每次默认重新标定，只有本人有效缓存可用时才加 `--reuse-calibration`。
+按照新手套程序的终端提示完成五步标定（完全张开、五指并拢、点赞、五指聚拢捏、拇指指尖弯向根部）；标定成功后开始跟随。每次默认重新标定，只有本人有效的新格式双手缓存可用时才加 `--reuse-calibration`。旧 `.tmp` 不能复用。
 仅观察映射可加 `--preview`，此模式只发布 `/linkerhand/preview/ee/*/command`，不进入手驱动。
 
 Ctrl+C结束手套/桥接。停止发送新目标不等于电机失能。桥接不额外添加反馈等待、超时锁存或速度限制。
@@ -21,17 +23,21 @@ Ctrl+C结束手套/桥接。停止发送新目标不等于电机失能。桥接�
 手套输入仅选择VID:PID=1a86:7523的两个CH340串口，不扫描原有RS485/IMU串口。驱动未安装时入口会直接报告缺失。
 启动入口会按需临时屏蔽brltty-udev.service（仅/run、本次开机有效），并从runtime/drivers加载已编译的CH341模块；没有执行make install、修改/lib/modules、替换内核或永久禁用服务。重启后由同一入口重新加载。需撤销临时屏蔽时执行 `sudo systemctl unmask --runtime brltty-udev.service`。
 原手套L6六个电机量0..255经 `100*(255-x)/255` 转为厂家0..100；对应厂家库setPosMapping的逆变换，六个寄存器顺序不变。
-原手套程序按自身配置发布（当前30Hz），保留原标定、L6映射、原有滤波及原有输出处理。
+新 SDK 通过 LinkerH JointState 输出接现有桥接，W1 配置为30Hz、平滑alpha=0.5、max_step=20。使用新 SDK 的五态标定、归一化L6映射和失联处理，算法和首次平滑行为不保证与旧 SDK 数值等价；六轴实手方向和跟随效果须重新验收。
 桥接每收到一帧就直接换算并转发，保留原消息时间戳；不增加定时重采样、新帧去重、平滑、变化率限制或反馈锁存。仅校验六维输入数值格式，不改变有效目标。
 话题仍隔离为 `/linkerhand/w1/ee/{left,right}/command`，不发送手臂、底盘或使能命令。
 
 ## 文件
 
-- `repos/linkerhand_ros_teleop/`：独立手套副本，保留原L6算法与终端标定。
-- `config/w1/glove/`：本次部署配置，源码config目录指向这里。
-- `runtime/calibration/glove/`：用户标定；不沿用仓库样本标定。
+- `repos/linkerbot_ffg_ros2/`：固定版本的新 SDK，完整保留上游文件和许可证，不在其中修改算法。
+- `ffg_entry.py`：W1 串口白名单、双手检查、ROS话题重映射、五步标定事件与进程收尾。
+- `repos/linkerhand_ros_teleop/`：旧 SDK 回退副本。
+- `config/w1/glove_ffg.yaml`：新 SDK 的 W1 部署配置。
+- `config/w1/glove/`：旧 SDK 的回退配置。
+- `runtime/calibration/glove_ffg/`：新 SDK 用户标定；不使用仓库样例。
+- `runtime/calibration/glove/`：旧 SDK 缓存，保留且不自动转换。
 - `runtime/logs/`：日志。
-- `runtime/venvs/glove-humble/`：独立Python环境，读取系统ROS依赖，不覆盖厂家Python包。
+- `runtime/venvs/glove-humble/`：默认复用现有独立Python环境；可通过 `W1_GLOVE_VENV` 指定另一环境，不覆盖厂家Python包。
 
 首次实机跟随仍需由操作者完成。代码/导入/预览检查不代表手运动验收。
 

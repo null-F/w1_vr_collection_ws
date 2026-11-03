@@ -115,7 +115,12 @@ class Manager:
             if kind == 'stage':
                 stage = event.get('stage')
                 texts = {'fist': '请双手握拳并保持。', 'opose': '请双手保持O型手势。',
-                         'original': '请双手五指张开并保持。'}
+                         'original': '请双手五指张开并保持。',
+                         'open_full': '请双手五指完全张开并伸直。',
+                         'adduct': '请双手五指并拢伸直。',
+                         'thumbs_up': '请双手做点赞手势。',
+                         'pinch': '请双手五指指尖聚拢捏在一起。',
+                         'thumb_flex': '请双手拇指指尖弯向拇指根。'}
                 if stage in texts and stage != self.stage:
                     self.phase = 'calibrating'
                     self.stage = stage

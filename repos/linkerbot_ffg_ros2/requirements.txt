@@ -1,0 +1,12 @@
+# Pin NumPy to version compatible with ROS2 Jazzy
+# 使用处: linkerbot_ffg_ros/calibration/capture.py
+numpy<2.0
+
+# 配置与标定 (import yaml)
+# 使用处: linkerbot_ffg_ros/settings/loader.py, linkerbot_ffg_ros/calibration/store.py
+PyYAML
+
+# 手套串口 (import serial)
+# 使用处: linkerbot_ffg_ros/glove_ffg/transport.py
+pyserial
+
