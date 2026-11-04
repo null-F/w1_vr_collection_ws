@@ -5,6 +5,8 @@ INTEGRATION=/home/dexforce/linkerhand/repos/w1_glove_integration
 source "$INTEGRATION/env.sh"
 exec 9>"$LINKER_W1_ROOT/runtime/gloves.lock"
 flock -n 9 || { echo 'Glove program is already running.' >&2; exit 1; }
+# Files/config check only; no sound device is opened here.
+python "$HERE/local_voice.py" --check
 if [[ "$W1_GLOVE_SDK" == ffg ]]; then
     python "$INTEGRATION/ffg_entry.py" --check
 fi

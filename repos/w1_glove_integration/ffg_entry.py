@@ -14,14 +14,15 @@ from pathlib import Path
 import sys
 import threading
 import time
-import urllib.request
 
 from glove_ports import checked_glove_ports
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'repos/w1_vr_glove_integration'))
+from local_voice import play_text
+
 SDK_ROOT = ROOT / 'repos/linkerbot_ffg_ros2'
 SIDES = ('left', 'right')
-VOICE_URL = 'http://192.168.20.21:8766/voice_agent/speak'
 EVENT_PREFIX = 'LINKERHAND_GLOVE_EVENT '
 REMAPS = [
     '--ros-args',
@@ -90,43 +91,44 @@ def emit(event, **fields):
     print(EVENT_PREFIX + json.dumps(dict(event=event, **fields), ensure_ascii=False), flush=True)
 
 
-def speak(text):
-    """Keep the existing online speech contract; offline speech is a separate task."""
-    payload = {'type': 'text', 'params': {'text': text}, 'blocking': True}
-    request = urllib.request.Request(
-        VOICE_URL, json.dumps(payload, ensure_ascii=False).encode(),
-        {'Content-Type': 'application/json; charset=utf-8'}, method='POST',
-    )
-    with urllib.request.urlopen(request, timeout=25) as response:
-        result = json.load(response)
-    if result.get('code') != 0 or result.get('data', {}).get('status') != 'ok':
-        raise RuntimeError('Calibration prompt could not be spoken: ' + str(result))
+def speak(text, cancel=None):
+    """Play a packaged PC1 prompt. No PC2/cloud or runtime synthesis."""
+    play_text(text, cancel)
 
 
-def speak_while_polling(readers, text, speaker=speak):
-    """The new SDK has synchronous readers: keep polling on the owner thread.
+def speak_while_polling(readers, text, speaker=None):
+    """Keep synchronous SDK readers on their owner thread during local playback.
 
-    Only HTTP runs in a daemon thread. Stable sampling starts after speech has
-    succeeded; Ctrl+C need not wait for the HTTP timeout to close glove ports.
+    A stopped/failed calibration cancels and reaps its audio subprocess before
+    the next session can start; sampling only begins after successful playback.
     """
     finished = threading.Event()
+    cancel = threading.Event()
     errors = []
 
     def announce():
         try:
-            speaker(text)
+            if speaker is None:
+                speak(text, cancel)
+            else:
+                speaker(text)  # explicit test/embedding hook
         except Exception as exc:
             errors.append(exc)
         finally:
             finished.set()
 
-    threading.Thread(target=announce, daemon=True).start()
-    while not finished.is_set():
-        for reader in readers.values():
-            reader.poll()
-        finished.wait(1.0 / 30.0)
-    if errors:
-        raise errors[0]
+    worker = threading.Thread(target=announce, daemon=True, name='w1-calibration-voice')
+    worker.start()
+    try:
+        while not finished.is_set():
+            for reader in readers.values():
+                reader.poll()
+            finished.wait(1.0 / 30.0)
+        if errors:
+            raise errors[0]
+    finally:
+        cancel.set()
+        worker.join(timeout=2)
 
 
 @contextmanager

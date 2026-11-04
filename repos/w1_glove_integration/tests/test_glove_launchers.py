@@ -82,6 +82,11 @@ elif '--check' not in args:
                             capture_output=True, text=True, timeout=6)
     assert result.returncode == exit_code, result.stdout + result.stderr
     calls = [json.loads(line) for line in log.read_text().splitlines()]
+    voices = [c for c in calls if Path(c[0]).name == 'local_voice.py']
+    assert len(voices) == (1 if launcher == 'vr' else 0)
+    if voices:
+        assert voices[0][1:] == ['--check']
+        assert calls.index(voices[0]) < next(i for i, c in enumerate(calls) if Path(c[0]).name == 'w1_hand_bridge.py')
     bridges = [c for c in calls if Path(c[0]).name == 'w1_hand_bridge.py']
     assert len(bridges) == 1
     assert ('--preview' in bridges[0]) == ('--preview' in options)

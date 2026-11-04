@@ -1,5 +1,7 @@
 # W1 手套 SDK 切换说明（2026-11-03）
 
+> 本文记录第一项 SDK 迁移基线（`dfc1b31`），下文在线语音描述属于该提交。后续第三项已独立改为 PC1 本地提示音，当前播放机制与边界见 `../w1_vr_glove_integration/OFFLINE_VOICE.md`。历史 84 项测试结果不等于后续语音或实机验收。
+
 ## 范围与版本
 
 - 新 SDK：`repos/linkerbot_ffg_ros2`，上游 `linker-bot/linkerbot-ffg-ros2`。

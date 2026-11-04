@@ -13,6 +13,7 @@
 | `repos/w1_vr_glove_integration` | 左手柄 X 键标定，握柄加左摇杆录制 |
 | `config/w1/glove_ffg.yaml` | 新 SDK 的 W1 配置：L6 / LinkerH / 30 Hz / 关闭力反馈 |
 | `config/w1/glove` | 旧 SDK 配置，回退时使用 |
+| `config/w1/voice.json` | PC1 离线提示音配置，固定本地 PulseAudio socket 和 Yundea USB sink |
 | `runtime/` | CH341 驱动、MCAP 插件、标定和运行锁 |
 | `arms_hang.json` | 从现场关节状态抄下的准备姿态 |
 
@@ -28,7 +29,7 @@
 
 默认入口已改接 `linkerbot-ffg-ros2`，旧 SDK 保留为 `W1_GLOVE_SDK=legacy` 显式回退。
 新标定写入 `runtime/calibration/glove_ffg/`，不读取旧 `jointangle_data.tmp`，首次必须重新做五步标定。
-这次没有更换厂家手驱动、修复触觉维度或替换在线语音。
+SDK 切换没有更换厂家手驱动或修复触觉维度。后续手套/采集离线提示音改造见下文，厂家系统播报保持不变。
 
 **当前是仓库侧适配，不是实机验收结论。** 上游声明 Jazzy/Python 3.12，W1 仍使用 Humble/Python 3.10；
 Humble 运行、USB 通信和六轴方向需在目标机验证。操作与回退见 `repos/w1_glove_integration/SDK_MIGRATION.md`。
@@ -50,7 +51,7 @@ Quest 扳机发到 `/control/ee/*` 的命令不会驱动这双手。`w1_hand_bri
 
 左手柄 X 短按一次并松开：新 SDK 按语音依次做完全张开、五指并拢、点赞、五指聚拢捏、拇指指尖弯向拇指根，完成后开始跟随。再短按一次：标定中取消，跟随中停止。停止手套不会关闭手驱动。
 
-两侧握柄都按住时，单击左摇杆开始录制，再单击或松开任一握柄则停止并保存。语音走 PC2 的 `http://192.168.20.21:8766/voice_agent/speak`。终端采集命令仍然可用：
+两侧握柄都按住时，单击左摇杆开始录制，再单击或松开任一握柄则停止并保存。这两类提示改为 PC1 本地 WAV，定向播放到 Yundea USB 音箱，不再经 PC2 合成。终端采集命令仍然可用：
 
 ```bash
 bash repos/w1_mcap_collection/record.sh start <任务名>
@@ -74,6 +75,15 @@ VR 入口的任务名在 `repos/w1_vr_glove_integration/mcap_settings.json`，�
 - `linkerhand-w1-mcap.service`
 
 回滚先运行 `rollback_mcap.py`，再运行 `rollback.py`。回滚不删除已经录好的数据和标定缓存。
+
+## PC1 离线提示音
+
+固定提示音库和入口已接入；不是音频设备、Humble 或开机实机验收结论。
+音频出口按现场记录固定为 PC1 的 Yundea M1051 USB sink，而非 PC2 的 `yundea_speaker` 隧道别名或默认声卡。
+`paplay` / `pactl` 连接本地用户 PulseAudio socket；不新增常驻服务、不改麦克风/默认声卡/音量/隧道或原语音服务。
+保留 `VA_VAD_RMS_THRESHOLD=40000`、关闭唤醒对话、已清空的充电插入提示，以及厂家低电量/充满电/开机提示。
+语音文件使用基础合成音色，仍需 PC1 试听和服务用户权限、未登录时开机音频服务就绪验证。
+配置、无声检查、试听和回退见 `repos/w1_vr_glove_integration/OFFLINE_VOICE.md`。
 
 ## 准备姿态
 
