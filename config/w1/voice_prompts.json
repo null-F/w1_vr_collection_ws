@@ -1,0 +1,22 @@
+{
+  "glove_open_full": "请双手五指尽量完全张开，伸直，并保持。",
+  "glove_adduct": "请双手五指并拢伸直，拇指靠向食指，并保持。",
+  "glove_thumbs_up": "请双手四指握拳，拇指竖起点赞，并保持。",
+  "glove_pinch": "请双手五指指尖聚拢，捏在一起，并保持。",
+  "glove_thumb_flex": "请双手四指放松张开，拇指指尖尽力弯向拇指根，并保持。",
+  "legacy_fist": "请双手握拳并保持。",
+  "legacy_opose": "请双手保持O型手势。",
+  "legacy_original": "请双手五指张开并保持。",
+  "glove_start_failed": "手套启动失败，请检查设备连接。",
+  "glove_ready": "标定完成，手套遥操已启动。",
+  "glove_calibration_failed": "手套标定失败，请检查手套后重新启动。",
+  "glove_exited": "手套程序已退出，请检查手套连接后重新启动。",
+  "glove_cancelled": "已取消手套标定。",
+  "glove_stopped": "已停止手套遥操。",
+  "record_saved": "数据采集已保存。",
+  "record_save_failed": "数据采集保存失败，请检查采集日志。",
+  "record_cancelled": "本次采集任务已取消。",
+  "record_cancel_failed": "数据采集取消失败，请检查采集日志。",
+  "record_started": "数据采集已开启。",
+  "record_start_failed": "数据采集启动失败，请检查采集日志。"
+}

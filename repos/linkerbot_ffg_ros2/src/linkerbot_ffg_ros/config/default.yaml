@@ -1,0 +1,93 @@
+# LinkerForce 遥操配置。
+
+system:
+  # 机械手型号：auto | o6 | l6 | l10 | l20lite | o30 | l20
+  robot: auto
+  # 手部后端：LinkerH | LinkerZ
+  hand_sdk: LinkerZ
+
+# LinkerZ 配置。
+linker_z:
+  # 指令消息的客户端 ID。
+  client_id: 1
+  # 保留字段。某一侧没有手部节点时不会发到这里，避免左右手串控。
+  command_topic: /linkerbot_hand/command/angles
+  # 左右手指令话题。空表示使用该侧手部节点的指令话题。该侧没有节点时不发布。
+  topics:
+    left: null
+    right: null
+  # 型号识别话题。
+  capabilities_topic: /linkerbot_hand/capabilities
+  # 型号识别超时，单位：秒。
+  discover_timeout_sec: 5.0
+  # 左右手力反馈话题；null 表示自动选择。
+  force_topics:
+    left: null
+    right: null
+  # O30 拇指前两路指令是否交换。
+  o30_swap_01: false
+
+# 手套串口配置。
+serial:
+  # 是否自动扫描串口。
+  auto_scan: true
+  # 扫描波特率列表。
+  baudrates: [2000000, 460800, 1000000, 921600]
+  left:
+    # 左手串口。
+    port: /dev/ttyUSB1
+    # 左手波特率。
+    baudrate: 2000000
+  right:
+    # 右手串口。
+    port: /dev/ttyUSB0
+    # 右手波特率。
+    baudrate: 2000000
+
+# 遥操循环配置。
+teleop:
+  # 循环频率，单位：Hz。
+  rate_hz: 30
+  # 是否启用指令平滑。
+  smooth: true
+  # 平滑系数。
+  smooth_alpha: 0.3
+  # 每周期最大变化量。
+  smooth_max_step: 20.0
+  # 标定目录。null：LINKERFORCE_CALIB_DIR，否则 ~/.local/share/linkerbot_ffg_ros/calibration。
+  calib_dir: null
+
+# 力反馈配置。
+force_feedback:
+  # 力反馈总开关。
+  enabled: true
+  # 触觉质量起始阈值。
+  trigger_mass: 200
+  # 触觉质量映射上限。
+  mass_max: 2000
+  # 起始力反馈指令值。
+  force_onset: 150
+  # 力反馈指令配置上限。
+  hardware_limit: 1000
+
+  # 默认力反馈配置。
+  default:
+    # 默认开关。
+    enabled: true
+    # 默认指令上限。
+    max_force: 500
+
+  # 各型号力反馈指令上限。
+  by_robot:
+    o6:
+      max_force: 500
+    o30:
+      max_force: 500
+    l6:
+      max_force: 1000
+    l10:
+      max_force: 500
+    l20lite:
+      max_force: 500
+    l20:
+      max_force: 500

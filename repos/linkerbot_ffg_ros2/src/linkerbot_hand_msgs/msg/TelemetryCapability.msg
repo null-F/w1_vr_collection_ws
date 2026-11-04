@@ -1,0 +1,22 @@
+string semantic
+string[] channel_names
+uint32[] shape
+NumericRange[] raw_ranges
+string raw_encoding
+# raw_vector, tactile_matrix, or tactile_descriptor; do not infer from model.
+string payload_projection
+bool has_raw_unit
+string raw_unit
+bool has_raw_scale_note
+string raw_scale_note
+string unit_confidence
+string read_mode
+float64 recommended_hz
+bool has_verified_max_hz
+float64 verified_max_hz
+float64 stale_after_s
+float64 estimated_transaction_s
+bool device_measured
+bool device_queried
+bool decoded_statuses
+string[] force_fields

@@ -6,3 +6,5 @@ runtime/drivers/rt-headers/
 runtime/*.lock
 runtime/*.pid
 runtime/mcap_recorder_state.json
+runtime/calibration/glove_ffg/
+runtime/voice/

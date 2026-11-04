@@ -1,0 +1,24 @@
+# W1 profile for the pinned linkerbot-ffg-ros2 SDK.
+# Do not use upstream defaults (LinkerZ, broad serial scan, force feedback ON).
+system:
+  robot: l6
+  hand_sdk: LinkerH
+serial:
+  auto_scan: false
+  baudrates: [2000000]
+  # Filled in memory with exactly two VID:PID=1a86:7523 devices.
+  # These are candidates; the SDK determines handedness from the protocol.
+  left: {port: null, baudrate: 2000000}
+  right: {port: null, baudrate: 2000000}
+teleop:
+  rate_hz: 30
+  smooth: true
+  # Retain the previous W1 L6 smoothing parameter values, not upstream YAML's 0.3.
+  # The new mapping/initialization is NOT numerically equivalent to the old SDK.
+  smooth_alpha: 0.5
+  smooth_max_step: 20.0
+  # Set by W1 entrypoint to runtime/calibration/glove_ffg, never the old .tmp cache.
+  calib_dir: null
+force_feedback:
+  enabled: false
+  default: {enabled: false, max_force: 500}

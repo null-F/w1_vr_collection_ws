@@ -158,6 +158,8 @@ class Bridge:
             self.worker.cancel()
             try:await self.worker
             except asyncio.CancelledError:pass
+        close_voice=getattr(self.voice,'close',None)
+        if close_voice is not None:await asyncio.to_thread(close_voice)
 
 
 def patch_buttons(module):

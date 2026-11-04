@@ -4,48 +4,17 @@ import collections
 import json
 import os
 from pathlib import Path
-import queue
 import signal
 import subprocess
 import threading
 import time
-import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+from local_voice import Voice  # also re-exported for mcap_bridge
 
 HERE = Path(__file__).resolve().parent
 RUNTIME = Path('/home/dexforce/linkerhand/runtime/vr_glove')
-VOICE = 'http://192.168.20.21:8766/voice_agent/speak'
 EVENT = 'LINKERHAND_GLOVE_EVENT '
-
-
-class Voice:
-    def __init__(self):
-        self.queue = queue.Queue()
-        self.epoch = 0
-        threading.Thread(target=self.run, daemon=True).start()
-
-    def clear(self):
-        self.epoch += 1
-
-    def say(self, text):
-        self.queue.put((self.epoch, text))
-
-    def run(self):
-        while True:
-            epoch, text = self.queue.get()
-            if epoch != self.epoch:
-                continue
-            try:
-                payload = {'type': 'text', 'params': {'text': text}, 'blocking': True}
-                req = urllib.request.Request(VOICE, json.dumps(payload, ensure_ascii=False).encode(),
-                    {'Content-Type': 'application/json; charset=utf-8'}, method='POST')
-                with urllib.request.urlopen(req, timeout=25) as response:
-                    result = json.load(response)
-                if result.get('code') != 0 or result.get('data', {}).get('status') != 'ok':
-                    raise RuntimeError(str(result))
-                print('VOICE_OK', text, flush=True)
-            except Exception as exc:
-                print('VOICE_FAILED', text, str(exc), flush=True)
 
 
 class Manager:
@@ -115,7 +84,12 @@ class Manager:
             if kind == 'stage':
                 stage = event.get('stage')
                 texts = {'fist': '请双手握拳并保持。', 'opose': '请双手保持O型手势。',
-                         'original': '请双手五指张开并保持。'}
+                         'original': '请双手五指张开并保持。',
+                         'open_full': '请双手五指完全张开并伸直。',
+                         'adduct': '请双手五指并拢伸直。',
+                         'thumbs_up': '请双手做点赞手势。',
+                         'pinch': '请双手五指指尖聚拢捏在一起。',
+                         'thumb_flex': '请双手拇指指尖弯向拇指根。'}
                 if stage in texts and stage != self.stage:
                     self.phase = 'calibrating'
                     self.stage = stage
@@ -197,6 +171,9 @@ class Manager:
         self.stop()
         if self.worker:
             self.worker.join(timeout=10)
+        close_voice = getattr(self.voice, 'close', None)
+        if close_voice is not None:
+            close_voice()
 
 
 def main():

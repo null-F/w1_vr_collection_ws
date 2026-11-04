@@ -20,11 +20,18 @@ def glove_ports():
     return ports
 
 
-if __name__ == '__main__':
+def checked_glove_ports():
     ports = glove_ports()
     if len(ports) != 2:
-        raise SystemExit(f'Expected two CH340 glove serial ports; found {ports}. USB driver may be missing; do not scan robot serial ports.')
+        raise RuntimeError(f'Expected two CH340 glove serial ports; found {ports}. USB driver may be missing; do not scan robot serial ports.')
     for port in ports:
         if not os.access(port, os.R_OK | os.W_OK):
-            raise SystemExit(f'No read/write permission: {port}')
-    print('\n'.join(ports))
+            raise RuntimeError(f'No read/write permission: {port}')
+    return ports
+
+
+if __name__ == '__main__':
+    try:
+        print('\n'.join(checked_glove_ports()))
+    except RuntimeError as exc:
+        raise SystemExit(str(exc)) from exc
