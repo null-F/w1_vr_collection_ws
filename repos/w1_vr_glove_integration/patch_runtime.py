@@ -3,6 +3,7 @@ import asyncio
 import functools
 import json
 from pathlib import Path
+import traceback
 import urllib.request
 
 HERE = Path(__file__).resolve().parent
@@ -55,9 +56,10 @@ def patch_low_frequency(module):
             if isinstance(msg, GloveControl):
                 try:
                     result = await asyncio.to_thread(send_toggle, msg.request_id)
-                    self.logger.info('LinkerHand X request %s: %s', msg.request_id, result)
                 except Exception:
-                    self.logger.exception('LinkerHand glove manager request failed')
+                    self.logger.error('LinkerHand glove manager request failed:\n' + traceback.format_exc())
+                else:
+                    self.logger.info(f'LinkerHand X request {msg.request_id}: {result}')
                 return
             return await original_dispatch(ws, msg, addr)
         kwargs['message_dispatcher'] = dispatch

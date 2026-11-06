@@ -12,18 +12,42 @@ CORE=Path('/home/dexforce/linkerhand/repos/w1_mcap_collection')
 RUNTIME=Path('/home/dexforce/linkerhand/runtime')
 OWNER=RUNTIME/'vr_mcap_owner.json'
 sys.path.insert(0,str(CORE))
-import rclpy
-from rclpy.node import Node
-from std_srvs.srv import Trigger
-from rcl_interfaces.srv import SetParameters
-from rcl_interfaces.msg import Parameter,ParameterValue,ParameterType
 from storage import read_json,atomic_json,identity_alive
-from cli import wait_future
 
 
 def brief(value):
     keys=['phase','recording','episode_dir','save_status','coverage_status','total_messages','duration_sec','errors','error','missing_topics','warnings']
     return {k:value[k] for k in keys if k in value}
+
+
+def read_cached_status(pid):
+    """Read process/episode state without creating a ROS node on every VR poll.
+
+    This is process observation, not a ROS responsiveness check. All control
+    commands still use ROS; uncertain/recovering state also uses the ROS path.
+    """
+    try:
+        state=read_json(RUNTIME/'mcap_recorder_state.json',{})
+        owner=read_json(OWNER,{})
+        if not isinstance(state,dict) or not isinstance(owner,dict):return None
+        if state.get('version')!=2:return None
+        identity=state.get('owner')
+        if not isinstance(identity,dict):return None
+        if any(identity.get(k)!=pid['identity'].get(k)
+               for k in ('pid','start_ticks','boot_id','uid')):return None
+        if owner and not owner.get('episode_dir'):return None
+        active=state.get('active')
+        if active is not None:
+            if not isinstance(active,dict) or state.get('phase')!='recording':return None
+            if not active.get('episode_dir') or not identity_alive(active.get('worker')):return None
+        elif state.get('phase') not in ('idle','saved','cancelled','failed'):
+            return None
+        return {'phase':state.get('phase'),'recording':bool(active),
+                'episode_dir':active['episode_dir'] if active else None,
+                'last_result':brief(state.get('last_result') or {}),
+                'owned_episode':owner.get('episode_dir'),'owner_pending':False}
+    except (OSError,ValueError,TypeError,KeyError,AttributeError):
+        return None
 
 
 def main():
@@ -39,6 +63,16 @@ def main():
         if str(CORE/'recorder.py').encode() not in script:raise RuntimeError('Recorder identity mismatch')
         target=pid.get('node')
         if target!='/w1_mcap_recorder':raise RuntimeError('Unexpected recorder node')
+        if a.command=='status':
+            cached=read_cached_status(pid)
+            if cached is not None:
+                print(json.dumps({'success':True,'result':cached},ensure_ascii=False));return 0
+        import rclpy
+        from rclpy.node import Node
+        from std_srvs.srv import Trigger
+        from rcl_interfaces.srv import SetParameters
+        from rcl_interfaces.msg import Parameter,ParameterValue,ParameterType
+        from cli import wait_future
         rclpy.init(args=[]);node=Node('vr_mcap_client_'+str(os.getpid()))
         def call(service):
             c=node.create_client(Trigger,target+'/'+service)

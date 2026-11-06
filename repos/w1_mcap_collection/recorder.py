@@ -17,11 +17,20 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.qos import qos_profile_sensor_data
 from std_srvs.srv import Trigger
 from engine import Engine
+from device_snapshot import DeviceSnapshot
 from storage import atomic_json, process_identity
 
 HERE=Path(__file__).resolve().parent
 RUNTIME=Path(os.environ.get('W1_MCAP_RUNTIME','/home/dexforce/linkerhand/runtime'))
 DATA_ROOT=os.environ.get('W1_MCAP_DATA_ROOT','/home/dexforce/collection_data')
+
+
+def capture_device_snapshot():
+    result=subprocess.run([sys.executable,str(HERE/'recorder.py'),'snapshot'],
+                          capture_output=True,text=True,timeout=8)
+    if result.returncode:
+        raise RuntimeError('Device snapshot failed: '+result.stderr[-300:])
+    return json.loads(result.stdout)
 
 
 class Recorder(Node):
@@ -32,7 +41,10 @@ class Recorder(Node):
         self.declare_parameter('collect_depth',False)  # compatibility only: no depth hardware in this profile
         self.engine=Engine(RUNTIME)
         self.config=yaml.safe_load((HERE/'topics.yaml').read_text())
-        for name,callback in [('start_recording',self.start),('stop_recording',self.stop),('cancel_recording',self.cancel),('status',self.status)]:
+        self.device_snapshot=DeviceSnapshot(RUNTIME/'device_snapshot.json',capture_device_snapshot)
+        self.get_logger().info('Device snapshot: '+json.dumps(self.device_snapshot.describe()))
+        self.engine.persist()  # Publish the current recorder identity for read-only status.
+        for name,callback in [('start_recording',self.start),('stop_recording',self.stop),('cancel_recording',self.cancel),('status',self.status),('refresh_snapshot',self.refresh_snapshot)]:
             self.create_service(Trigger,'~/'+name,self.wrap(callback))
         self.create_timer(.5,self.poll)
 
@@ -58,12 +70,8 @@ class Recorder(Node):
         if self.get_parameter('collect_depth').value:warnings.append('collect_depth ignored: W1 profile has no wrist/depth stream')
         for t in topics:
             if not self.get_publishers_info_by_topic(t):warnings.append(f'{t}: no publisher at start')
-        snap={}
-        try:
-            p=subprocess.run([sys.executable,str(HERE/'recorder.py'),'snapshot'],capture_output=True,text=True,timeout=8)
-            if p.returncode==0:snap=json.loads(p.stdout)
-            else:warnings.append('Device snapshot failed: '+p.stderr[-300:])
-        except Exception as exc:warnings.append('Device snapshot failed: '+str(exc))
+        snap,snapshot_warnings=self.device_snapshot.for_episode()
+        warnings.extend(snapshot_warnings)
         snap.update(device={'id':'w1-pc1','type':'Dexforce W1'},
                     hand={'model':'Linker_L6','dof':6,'position_unit':'normalized_0_100',
                           'action_topics':['/linkerhand/w1/ee/left/command','/linkerhand/w1/ee/right/command'],
@@ -82,6 +90,11 @@ class Recorder(Node):
 
     def status(self):
         self.engine.poll();return self.engine.status()
+
+    def refresh_snapshot(self):
+        if self.engine.active:
+            raise RuntimeError('Cannot refresh device snapshot while recording')
+        return {'snapshot':self.device_snapshot.refresh()}
 
 
 def snapshot_main():
