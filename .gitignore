@@ -8,3 +8,23 @@ runtime/*.pid
 runtime/mcap_recorder_state.json
 runtime/calibration/glove_ffg/
 runtime/voice/
+
+# 本地部署备份
+/runtime/backups/
+
+# 临时验证目录：采集数据、日志、代码快照
+/runtime/validation/
+
+# 手套运行日志、进程状态
+/runtime/vr_glove/
+
+# 本机设备缓存、VR 录制所有权状态
+/runtime/device_snapshot.json
+/runtime/vr_mcap_owner.json
+
+# runtime 下其他位置产生的日志和采集数据
+/runtime/**/*.log
+/runtime/**/*.mcap
+
+# Python 测试缓存
+.pytest_cache/

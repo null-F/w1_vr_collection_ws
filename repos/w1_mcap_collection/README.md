@@ -76,3 +76,62 @@ bash /home/dexforce/linkerhand/repos/w1_mcap_collection/record.sh cancel
 - 独立Python环境 `/home/dexforce/linkerhand/runtime/venvs/mcap-collection`，使用系统ROS库和mcap==1.5.0，不覆盖厂家Python包。
 - 测试专用环境变量：W1_MCAP_RUNTIME、W1_MCAP_DOMAIN_ID、W1_MCAP_DATA_ROOT。生产默认域20；验证域79与真机隔离。
 - 常驻日志：`/home/dexforce/linkerhand/runtime/logs/mcap_recorder.log`。
+
+### 固定硬件设备信息与启动延迟
+
+设备信息保存在 `runtime/device_snapshot.json`。常驻采集器启动时读取并校验缓存；
+仅缓存缺失、格式不符或校验失败时获取一次现场快照。完整快照才会写入缓存，
+跨录制、跨服务重启和跨机器人重启复用，不自动按时间过期。
+开始录制只复制内存中的设备信息到该回合的 `device_info.json`，不再临时启动
+快照进程。`snapshot_metadata` 记录来源、原始获取时间和是否已持久化；
+原来的关节名称、相机标定、图像尺寸字段保持不变。
+
+首次获取失败或信息不完整时仍允许录制，缺项记录到 warnings，且不把不完整信息
+保存为永久缓存。之后每次按键不会重复等待，修复设备后可以在没有活动录制时执行：
+
+```bash
+bash /home/dexforce/linkerhand/repos/w1_mcap_collection/record.sh refresh
+```
+
+更换硬件、修改标定或相机分辨率后也需要执行此命令。刷新成功会原子更新缓存及
+当前采集器的内存信息；失败保留原缓存并返回错误，不改写已有回合。
+
+VR 周期状态查询优先读取属于当前采集进程的状态文件，并校验采集器和录制工作
+进程身份，避免每次创建 ROS 客户端。恢复中、所有权待确认或状态异常时仍走原有
+ROS 查询。此查询表示进程/回合状态，不代表 ROS 服务响应性检查；开始、停止、
+取消仍通过原 ROS 服务执行并保留所有权校验、录制启动检查和 MCAP 保存校验。
+
+### 首次安装或环境缺失时
+
+`runtime/venvs` 不在 Git 中，拉取代码不会创建 Python 环境。确认没有活动录制后，
+停止 `linkerhand-w1-mcap.service`，以 `dexforce` 用户在 PC1 执行：
+
+```bash
+bash /home/dexforce/linkerhand/repos/w1_mcap_collection/setup_env.sh
+```
+
+脚本使用系统 Python 3.10 创建 `--system-site-packages` 独立环境，并安装
+`requirements.txt` 中的依赖。重复执行会复用已存在的合规环境，不清空目录，
+也不会修改厂家 Python 环境或自动操作服务。系统需要提供 `venv`、ROS2 Humble、
+PyYAML 和 Pillow；检查不通过时按错误补齐依赖，不使用全局 `pip install`。
+
+离线安装可传入提前准备的、适用于 PC1 Python 3.10 / aarch64 的完整 wheel 目录：
+
+```bash
+bash /home/dexforce/linkerhand/repos/w1_mcap_collection/setup_env.sh \
+  --no-index --find-links /path/to/wheels
+```
+
+只检查现有环境：
+
+```bash
+bash /home/dexforce/linkerhand/repos/w1_mcap_collection/check_env.sh
+```
+
+检查包含实际使用的 Python 模块、MCAP 版本、原生插件动态加载与 rosbag2 注册。
+该检查不创建运行目录、不启动 ROS 节点、不发起录制、不改变服务状态。
+Python `mcap` 包用于保存校验，原生 `rosbag2_storage_mcap` 插件用于录制，两者都需要。
+
+检查通过后再启动采集服务，并确认不再反复重启。最终验收需短录制、停止保存、
+MCAP 全量读回和进程收尾检查；同时检查 `coverage_status` / `missing_topics`，
+环境检查通过本身不代表现场话题完整。

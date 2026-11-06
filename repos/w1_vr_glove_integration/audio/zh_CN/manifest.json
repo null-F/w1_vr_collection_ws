@@ -1,153 +1,132 @@
 {
   "schema_version": 2,
   "generator": {
-    "engine": "eSpeak NG text-to-speech: 1.51  Data at: /usr/lib/x86_64-linux-gnu/espeak-ng-data",
-    "voice": "cmn-latn-pinyin",
-    "speed": 170,
-    "input_encoding": "UTF-8 (engine -b 1)",
-    "validation": "Per-prompt Mandarin tone markers and no foreign-language fallback; not an acoustic/listening test.",
-    "note": "Basic synthetic Mandarin. Target intelligibility not yet accepted."
+    "engine": "Microsoft Edge neural TTS via edge-tts",
+    "voice": "zh-CN-XiaoxiaoNeural",
+    "rate": "-5%",
+    "format": "PCM16 mono 24000 Hz WAV",
+    "note": "Replacement bank for repos/w1_vr_glove_integration/audio/zh_CN. Texts and filenames match voice_prompts.json."
   },
   "prompts": {
     "glove_open_full": {
       "text": "请双手五指尽量完全张开，伸直，并保持。",
       "file": "glove_open_full.wav",
-      "sha256": "488708eb3521f645719a4e94085684acf4367ec0f5cddeb52bbce504990c9939",
-      "duration_seconds": 5.63,
-      "phonemes": "tS;h'i21N_| s.w'A55N_| s.'ou35_| w'u35_| ts.'i.21_| tS;'i51n_| l'iA51N_| w'A35n_| tS;h'y&35n_| ts.'a55N_| kh'ai55_|\ns.'@55n_| ts.'i.35_|\np'i51N_| p'Au21_| ts.h'i.35_|"
+      "sha256": "d1a899cb54cc31bb5454ff7231d8e773f773d47a0338e314dcfe3f359e8d92a1",
+      "duration_seconds": 5.04
     },
     "glove_adduct": {
       "text": "请双手五指并拢伸直，拇指靠向食指，并保持。",
       "file": "glove_adduct.wav",
-      "sha256": "53ce30c42aaae3ed6539a6875f6b272a8930adacff4550ced46e1cc950a1d1ab",
-      "duration_seconds": 6.018,
-      "phonemes": "tS;h'i21N_| s.w'A55N_| s.'ou35_| w'u35_| ts.'i.21_| p'i51N_| l'ong21_| s.'@55n_| ts.'i.35_|\nmu11_| ts.'i.21_| kh'Au51_| S;'iA51N_| s.'i.35_| ts.'i.214_|\np'i51N_| p'Au21_| ts.h'i.35_|"
+      "sha256": "155e9aaf921d0bd8684ef211657271dfadb3a2cb263e0e78f92b37072acba172",
+      "duration_seconds": 5.4
     },
     "glove_thumbs_up": {
       "text": "请双手四指握拳，拇指竖起点赞，并保持。",
       "file": "glove_thumbs_up.wav",
-      "sha256": "7402619546147a57280ed6cbcc28200ba99bfd5cc2ab530ff122104c8d1548ff",
-      "duration_seconds": 5.392,
-      "phonemes": "tS;h'i21N_| s.w'A55N_| s.'ou21_| s'i[51_| ts.'i.21_| w'o51_| tS;h'y&35n_|\nmu11_| ts.'i.21_| s.'u51_| tS;h'i35_| t'iE21n_| ts'a51n_|\np'i51N_| p'Au21_| ts.h'i.35_|"
+      "sha256": "774554092589b648445dbd9b5d5ca9120dc34a0f2c8b38062505ec54561d9755",
+      "duration_seconds": 4.848
     },
     "glove_pinch": {
       "text": "请双手五指指尖聚拢，捏在一起，并保持。",
       "file": "glove_pinch.wav",
-      "sha256": "ab5e7ccd8b8faa9899da596ed4a09f5a94660ea4c08f37d2493e7638d7990bf1",
-      "duration_seconds": 5.363,
-      "phonemes": "tS;h'i21N_| s.w'A55N_| s.'ou35_| w'u35_| ts.'i.35_| ts.'i.21_| tS;'iE55n_| tS;'y51_| l'ong214_|\nn'iE55_| ts'ai51_| j'i55_| tS;h'i214_|\np'i51N_| p'Au21_| ts.h'i.35_|"
+      "sha256": "c12f969f6389d1bb8e5e84694eb9ec74989cb00a310de38fea88737980ec9293",
+      "duration_seconds": 4.752
     },
     "glove_thumb_flex": {
       "text": "请双手四指放松张开，拇指指尖尽力弯向拇指根，并保持。",
       "file": "glove_thumb_flex.wav",
-      "sha256": "a76ec0e0b667af0361311a26e5fbfa017bd2f66a117d603aeffe2db92b542750",
-      "duration_seconds": 7.397,
-      "phonemes": "tS;h'i21N_| s.w'A55N_| s.'ou21_| s'i[51_| ts.'i.21_| f'a51N_| s'ong55_| ts.'a55N_| kh'ai55_|\nmu11_| ts.'i.35_| ts.'i.21_| tS;'iE55n_| tS;'i51n_| l'i51_| w'A55n_| S;'iA51N_| mu11_| ts.'i.21_| k'@55n_|\np'i51N_| p'Au21_| ts.h'i.35_|"
+      "sha256": "b027128f2744da7c0c0773b1e1e6ecf45564f128fb3a9cf984fda200ab5ff62e",
+      "duration_seconds": 6.528
     },
     "legacy_fist": {
       "text": "请双手握拳并保持。",
       "file": "legacy_fist.wav",
-      "sha256": "4a70fa5c8cbdb9b67fb15be331efed013c5f07664e742062535c9ca68b689d4f",
-      "duration_seconds": 2.822,
-      "phonemes": "tS;h'i21N_| s.w'A55N_| s.'ou21_| w'o51_| tS;h'y&35n_| p'i51N_| p'Au21_| ts.h'i.35_|"
+      "sha256": "499f023d935dc8d3da648ce816a2b6e0e9287d0fdd9d139c3c34fb47cb2dc4db",
+      "duration_seconds": 2.616
     },
     "legacy_opose": {
       "text": "请双手保持O型手势。",
       "file": "legacy_opose.wav",
-      "sha256": "be65a26cafa4691f61b0b0ee31a70e5ee4e05c171bbaad48fa61bcece48ee635",
-      "duration_seconds": 2.926,
-      "phonemes": "tS;h'i21N_| s.w'A55N_| s.'ou35_| p'Au21_| ts.h'i.35_| 'ou55_| S;'i35N_| s.'ou21_| s.'i.51_|"
+      "sha256": "1a7a0346adfd86eb464d9612545a5c3b0f1b812c4a3e91becca4edf0b4fc5451",
+      "duration_seconds": 2.832
     },
     "legacy_original": {
       "text": "请双手五指张开并保持。",
       "file": "legacy_original.wav",
-      "sha256": "c8a147db5a6535ad0b2d89876946170a07606c07dfcd92c6d87142bcaf9e62f9",
-      "duration_seconds": 3.352,
-      "phonemes": "tS;h'i21N_| s.w'A55N_| s.'ou35_| w'u35_| ts.'i.21_| ts.'a55N_| kh'ai55_| p'i51N_| p'Au21_| ts.h'i.35_|"
+      "sha256": "c30b68bfd58a8b21ccd6260cc313b2bf57b232fe9b4bbb27ddb859a3bffa1b57",
+      "duration_seconds": 3.024
     },
     "glove_start_failed": {
       "text": "手套启动失败，请检查设备连接。",
       "file": "glove_start_failed.wav",
-      "sha256": "69aee07ff02cd54775dabd81a38bc06fc3ef63c25c7c0cd1424620b5ef6af095",
-      "duration_seconds": 4.179,
-      "phonemes": "s.'ou21_| th'Au51_| tS;h'i21_| t'ong51_| s.'i.55_| p'ai51_|\ntS;h'i35N_| tS;'iE21n_| ts.h'A35_| s.'o-51_| p'ei51_| l'iE35n_| tS;'iE55_|"
+      "sha256": "d089a650059f1174402a1157cbedfc6b2bf5b9eb2da39f01f11c376e1c6df5d6",
+      "duration_seconds": 3.816
     },
     "glove_ready": {
       "text": "标定完成，手套遥操已启动。",
       "file": "glove_ready.wav",
-      "sha256": "1813f2be33efe979b21547e687ca4b729d5dee82eff52529141aa7291e833227",
-      "duration_seconds": 3.563,
-      "phonemes": "pj'Au55_| t'i51N_| w'A35n_| ts.h'@35N_|\ns.'ou21_| th'Au51_| j'Au35_| tsh'Au55_| j'i35_| tS;h'i21_| t'ong51_|"
+      "sha256": "10bc449fe97af5d220fb73036af3109c3d08dd6a3db77cacc6fbabbd0d81a218",
+      "duration_seconds": 3.48
     },
     "glove_calibration_failed": {
       "text": "手套标定失败，请检查手套后重新启动。",
       "file": "glove_calibration_failed.wav",
-      "sha256": "ae35d9bd4e4c01198676da7929ce41bf840aaa09dd537dba15a51ee95b24ef94",
-      "duration_seconds": 5.19,
-      "phonemes": "s.'ou21_| th'Au51_| pj'Au55_| t'i51N_| s.'i.55_| p'ai51_|\ntS;h'i35N_| tS;'iE21n_| ts.h'A35_| s.'ou21_| th'Au51_| X'ou51_| ts.'ong51_| S;'i55n_| tS;h'i21_| t'ong51_|"
+      "sha256": "85d3ede7c9e190c872ca9be5f4a49011b2a825ef7f2bd69791a6c44178231c0e",
+      "duration_seconds": 4.776
     },
     "glove_exited": {
       "text": "手套程序已退出，请检查手套连接后重新启动。",
       "file": "glove_exited.wav",
-      "sha256": "0ddfdbdf9252a59f9bdf4297e6e2544191687a785516908064dadd456edaea49",
-      "duration_seconds": 6.061,
-      "phonemes": "s.'ou21_| th'Au51_| ts.h'@35N_| S;'y51_| j'i21_| th'uei51_| ts.h'u55_|\ntS;h'i35N_| tS;'iE21n_| ts.h'A35_| s.'ou21_| th'Au51_| l'iE35n_| tS;'iE55_| X'ou51_| ts.'ong51_| S;'i55n_| tS;h'i21_| t'ong51_|"
+      "sha256": "3c8e7d02e211e583d195a36b88d497139a1664dbc609edf2af827ece41522d3e",
+      "duration_seconds": 5.352
     },
     "glove_cancelled": {
       "text": "已取消手套标定。",
       "file": "glove_cancelled.wav",
-      "sha256": "980a738927c8af1f3c3c8d5a60172a9622bbca0fe6134a06f825af608aa43417",
-      "duration_seconds": 2.249,
-      "phonemes": "j'i35_| tS;h'y21_| S;j'Au55_| s.'ou21_| th'Au51_| pj'Au55_| t'i51N_|"
+      "sha256": "0f3d5fec249d230216db16f387e3df6199744a9c5e812614540c31b3944a17aa",
+      "duration_seconds": 2.304
     },
     "glove_stopped": {
       "text": "已停止手套遥操。",
       "file": "glove_stopped.wav",
-      "sha256": "64a6a3f9200fdebd1b32ab789be2647f9ecc8f59a070c0ee1282ef83305aff46",
-      "duration_seconds": 2.155,
-      "phonemes": "j'i21_| th'i35N_| ts.'i.35_| s.'ou21_| th'Au51_| j'Au35_| tsh'Au55_|"
+      "sha256": "ba03e05a7eb292331cf27a7f8f99c620c73c54b1a59e1ac8eb49e6b641a43bc3",
+      "duration_seconds": 2.28
     },
     "record_saved": {
       "text": "数据采集已保存。",
       "file": "record_saved.wav",
-      "sha256": "9ede0f800c7a8f26d46f7786f449d8390e63f473949ecdbe7b8fae13b238e6f9",
-      "duration_seconds": 2.27,
-      "phonemes": "s.'u51_| tS;'y51_| tsh'ai21_| tS;'i35_| j'i35_| p'Au21_| tsh'u@35n_|"
+      "sha256": "ef4f0fcdb57ec5354bcf036d7df02fb2c81eca0904fedb9c5c6ffd52d2a86e7c",
+      "duration_seconds": 2.4
     },
     "record_save_failed": {
       "text": "数据采集保存失败，请检查采集日志。",
       "file": "record_save_failed.wav",
-      "sha256": "68b752dd22eeec25cfd3d85108df75db703fde54142cc38787fa84700cc269be",
-      "duration_seconds": 4.75,
-      "phonemes": "s.'u51_| tS;'y51_| tsh'ai21_| tS;'i35_| p'Au21_| tsh'u@35n_| s.'i.55_| p'ai51_|\ntS;h'i35N_| tS;'iE21n_| ts.h'A35_| tsh'ai21_| tS;'i35_| z.'i.51_| ts.'i.51_|"
+      "sha256": "987df8f90c2dec5367260adc23d3b6b8fc18d40e576b5d85c250e289ea582baf",
+      "duration_seconds": 4.392
     },
     "record_cancelled": {
       "text": "本次采集任务已取消。",
       "file": "record_cancelled.wav",
-      "sha256": "9fc8e7e265880f62801df23de8738c6e1a0b4091a2e1dd5d0d168519ad2d4879",
-      "duration_seconds": 2.776,
-      "phonemes": "p'@21n_| tsh'i[51_| tsh'ai21_| tS;'i35_| z.'@51n_| wu11_| j'i35_| tS;h'y21_| S;j'Au55_|"
+      "sha256": "3358c043deb436c715c1f97cf5ea31624b049827cfc25986db2ce8842f494548",
+      "duration_seconds": 2.688
     },
     "record_cancel_failed": {
       "text": "数据采集取消失败，请检查采集日志。",
       "file": "record_cancel_failed.wav",
-      "sha256": "26180eb3fe6ff74430949934e94d151dfcadfb0130fd99da02baf4f1d798beb8",
-      "duration_seconds": 4.813,
-      "phonemes": "s.'u51_| tS;'y51_| tsh'ai21_| tS;'i35_| tS;h'y21_| S;j'Au55_| s.'i.55_| p'ai51_|\ntS;h'i35N_| tS;'iE21n_| ts.h'A35_| tsh'ai21_| tS;'i35_| z.'i.51_| ts.'i.51_|"
+      "sha256": "3680e1c276939f2d1f5cee38539c92df38131ec2c2c1335f78d942fbd8b18711",
+      "duration_seconds": 4.44
     },
     "record_started": {
       "text": "数据采集已开启。",
       "file": "record_started.wav",
-      "sha256": "25d3078b13e294f76141b6d3983451dba7d34b70d4f6a128d903908a13077e89",
-      "duration_seconds": 2.257,
-      "phonemes": "s.'u51_| tS;'y51_| tsh'ai21_| tS;'i35_| j'i21_| kh'ai55_| tS;h'i214_|"
+      "sha256": "189737458c3dd028ea865c27f51405cea3761149f3ae115933b259dd6e5f441b",
+      "duration_seconds": 2.424
     },
     "record_start_failed": {
       "text": "数据采集启动失败，请检查采集日志。",
       "file": "record_start_failed.wav",
-      "sha256": "eed8351d869c21c981010e8519ce6ba2712470424a29d700b1eec7ac60d0b7e6",
-      "duration_seconds": 4.803,
-      "phonemes": "s.'u51_| tS;'y51_| tsh'ai21_| tS;'i35_| tS;h'i21_| t'ong51_| s.'i.55_| p'ai51_|\ntS;h'i35N_| tS;'iE21n_| ts.h'A35_| tsh'ai21_| tS;'i35_| z.'i.51_| ts.'i.51_|"
+      "sha256": "2053caae13717d1bb5d6aed770dfdae3daf97b61c4eeb3a210901e5b34676233",
+      "duration_seconds": 4.368
     }
   }
 }

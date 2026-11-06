@@ -49,7 +49,7 @@ def ensure_server(client,target):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('command',choices=['start','stop','cancel','status']);p.add_argument('task',nargs='?')
+    p=argparse.ArgumentParser();p.add_argument('command',choices=['start','stop','cancel','status','refresh']);p.add_argument('task',nargs='?')
     p.add_argument('--node',default='w1_mcap_recorder');a=p.parse_args()
     if a.command=='start' and not a.task:p.error('start requires a task name')
     target='/'+a.node.strip('/')
@@ -59,7 +59,7 @@ def main():
         fcntl.flock(lock,fcntl.LOCK_EX)
         rclpy.init(args=[]);n=Node('w1_mcap_client_'+str(os.getpid()))
         try:
-            svc={'start':'start_recording','stop':'stop_recording','cancel':'cancel_recording','status':'status'}[a.command]
+            svc={'start':'start_recording','stop':'stop_recording','cancel':'cancel_recording','status':'status','refresh':'refresh_snapshot'}[a.command]
             client=n.create_client(Trigger,target+'/'+svc);ensure_server(client,target)
             if a.command=='start':
                 param=n.create_client(SetParameters,target+'/set_parameters')
