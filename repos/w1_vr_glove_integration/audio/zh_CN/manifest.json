@@ -127,6 +127,28 @@
       "file": "record_start_failed.wav",
       "sha256": "2053caae13717d1bb5d6aed770dfdae3daf97b61c4eeb3a210901e5b34676233",
       "duration_seconds": 4.368
+    },
+    "glove_calibrated": {
+      "text": "标定完成。",
+      "file": "glove_calibrated.wav",
+      "sha256": "640d965a7e7e4065fddcad1d87c4a7a2fba1f752c33541672ff55c5dd97a396f",
+      "duration_seconds": 1.25,
+      "clip": {
+        "source": "glove_ready",
+        "first_frame": 0,
+        "end_frame": 30000
+      }
+    },
+    "record_check_log": {
+      "text": "请检查采集日志。",
+      "file": "record_check_log.wav",
+      "sha256": "3004cc6d912c3f3ddfd0d95a19ce4cc2b2d500e936392defb577bc8674e89f9d",
+      "duration_seconds": 2.332,
+      "clip": {
+        "source": "record_save_failed",
+        "first_frame": 49440,
+        "end_frame": 105408
+      }
     }
   }
 }

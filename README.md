@@ -1,5 +1,7 @@
 # W1 VR 手套遥操与 MCAP 采集
 
+单人操作使用 PC1 USB 三联踏板。按键识别、模式切换和上机验收见[三联踏板接入说明](repos/w1_vr_glove_integration/PEDALS.md)。
+
 这是 DexForce W1 上的独立目录，部署在 PC1 的 `/home/dexforce/linkerhand`。手套控制双手 L6，Quest 3 遥操控头、腰、双臂和底盘，采集单独写成 MCAP。不修改厂家树 `/home/dexforce/w1` 里的源文件。
 
 ## 目录

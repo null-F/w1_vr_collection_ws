@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import time
+from operator_state import settings
 from glove_manager import Voice
 
 HERE=Path(__file__).resolve().parent
@@ -25,6 +26,7 @@ def rpc(command):
 
 class Bridge:
     def __init__(self,controller,message_class,runner=rpc,voice=None):
+        self.single = settings()['mode'] == 'single'
         self.controller=controller;self.message_class=message_class;self.runner=runner
         self.voice=voice if voice is not None else Voice()
         self.want=False;self.previous=False;self.grip=False;self.last_input=0.0
@@ -42,6 +44,7 @@ class Bridge:
         self.cancel_flag=True;self.want=False;self.reason='cancel'
 
     def observe(self,ws,pressed,grip):
+        if self.single:return
         if self.cancel_flag or self.phase=='cancelling' or self.reason=='cancel':
             self.last_input=time.monotonic();self.previous=bool(pressed);self.ensure_worker();return
         if self.ws is not None and ws is not None and ws is not self.ws and (self.want or self.episode):return
@@ -189,15 +192,24 @@ def patch_buttons(module):
 def bind_pose_lifecycle(controller):
     # The -m entrypoint is __main__; hook its existing instance, not its loader.
     pose=getattr(controller.broadcast_callback,'__self__',None)
-    if pose is None or not hasattr(pose,'_abort_recording_for_disconnected_client'):return
     bridge=controller.linker_mcap
+    if pose is None or not hasattr(pose,'_abort_recording_for_disconnected_client'):
+        if bridge.single:raise RuntimeError('Single-operator pose hook unavailable')
+        return
+    gate = None
+    if bridge.single:
+        from pedal_pose import PoseGate
+        gate = PoseGate(pose)
+        pose.handle_pose = gate.handle
     disconnected_original=pose._abort_recording_for_disconnected_client
     async def disconnected(ws,client_addr):
+        if gate:await gate.disconnect(ws)
         if bridge.ws is ws:bridge.stop('client_disconnected')
         return await disconnected_original(ws,client_addr)
     pose._abort_recording_for_disconnected_client=disconnected
     shutdown_original=pose.shutdown
     async def shutdown():
+        if gate:await gate.close()
         await bridge.close()
         return await shutdown_original()
     pose.shutdown=shutdown

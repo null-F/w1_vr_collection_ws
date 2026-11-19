@@ -1,0 +1,8 @@
+{
+  "mode": "dual",
+  "device": "",
+  "glove_key": 30,
+  "hold_key": 46,
+  "record_key": 18,
+  "debounce_ms": 150
+}

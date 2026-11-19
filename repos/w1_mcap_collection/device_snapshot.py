@@ -4,6 +4,10 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
+import threading
+
+import yaml
 import time
 from pathlib import Path
 
@@ -109,3 +113,99 @@ class DeviceSnapshot:
         value = copy.deepcopy(self._value)
         value['snapshot_metadata'] = dict(self._metadata)
         return value, list(self._warnings)
+
+
+class HeadCalibration:
+    """Associate live stereo calibration with the episode, including changes and loss."""
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.path = self.metadata = None
+        self.current = None
+        self.reason = 'missing'
+        self.last_raw = None
+        self.observed_ns = self.last_seen = 0
+        self.dirty = False
+
+    @staticmethod
+    def parse(raw):
+        if not isinstance(raw, str) or len(raw) > 65536:
+            raise ValueError('Invalid calibration payload size')
+        data = yaml.safe_load(raw)
+        if not isinstance(data, dict) or not isinstance(data.get('SN'), str) or not data['SN'].strip():
+            raise ValueError('Missing stereo camera serial')
+        for field, rows, cols in [('cam1_k',3,3), ('cam2_k',3,3), ('R_l_r',3,3), ('t_l_r',3,1),
+                                  ('dist_1',1,None), ('dist_2',1,None), ('image_size',1,2)]:
+            matrix = data[field]
+            if (not isinstance(matrix,list) or len(matrix) != rows or
+                    not all(isinstance(row,list) and (cols is None or len(row) == cols) and row and
+                            all(type(v) in (float,int) and math.isfinite(v) for v in row) for row in matrix)):
+                raise ValueError(f'Invalid calibration {field}')
+        if (any(type(v) is not int or v <= 0 for v in data['image_size'][0])
+                or any(data[k][i][i] <= 0 for k in ('cam1_k','cam2_k') for i in (0,1))):
+            raise ValueError('Invalid camera dimensions or focal length')
+        return {'sha256':checksum(data), 'serial':data['SN'], 'raw':raw}
+
+    def observe(self, raw):
+        with self.lock:
+            self.observed_ns, self.last_seen = time.time_ns(), time.monotonic()
+            if raw != self.last_raw:
+                try:
+                    self.current = self.parse(raw)
+                    self.reason = 'available'
+                except (KeyError, TypeError, ValueError, OverflowError, RecursionError, yaml.YAMLError):
+                    self.current, self.reason = None, 'invalid'
+                self.last_raw = raw
+            self._update()
+
+    def _expire(self):
+        if self.last_seen and time.monotonic() - self.last_seen > 3:
+            self.current, self.last_raw, self.reason = None, None, 'missing'
+
+    def tick(self):
+        with self.lock:
+            self._expire()
+            self._update()
+
+    def attach(self, path, metadata):
+        with self.lock:
+            self.path, self.metadata = path, metadata
+            if 'head_calibration' not in metadata:
+                metadata.pop('head_calibration_raw', None)  # Ignore the fixed-device cache for this field.
+                metadata['head_calibration'] = {'versions': {}, 'history': []}
+            self._expire()
+            self.dirty = True
+            self._update(force=True)
+
+    def _update(self, force=False):
+        if self.metadata is None:
+            return
+        record = self.metadata['head_calibration']
+        key = self.current['sha256'] if self.current else None
+        state = (self.reason, key)
+        previous = record['history'][-1] if record['history'] else {}
+        if force or state != (previous.get('status'), previous.get('sha256')):
+            if self.current:
+                record['versions'][key] = self.current
+                self.metadata.setdefault('head_calibration_raw', self.current['raw'])
+            record['history'].append(dict(status=self.reason, sha256=key, effective_wall_ns=time.time_ns(),
+                                          observed_wall_ns=self.observed_ns if self.current else None))
+            self.dirty = True
+        if self.dirty:
+            # Keep pending changes in memory and retry on the next monitor tick on write failure.
+            try:
+                atomic_json(self.path, self.metadata)
+            except OSError as exc:
+                print('Calibration metadata write failed:', exc, flush=True)
+                if force:
+                    raise
+            else:
+                self.dirty = False
+
+    def detach(self):
+        with self.lock:
+            try:
+                if self.dirty:
+                    atomic_json(self.path, self.metadata)
+            finally:
+                self.metadata = self.path = None
+                self.dirty = False

@@ -112,11 +112,11 @@ def test_check_neither_executes_nor_opens_audio(bank, monkeypatch):
 def test_packaged_bank_has_all_real_prompts_and_nonzero_audio():
     # Executables are deliberately inert labels: static validation must not run them.
     player = voice.LocalPlayer(executable='unused-paplay', probe_executable='unused-pactl')
-    assert player.check()['prompts'] == 20
+    assert player.check()['prompts'] == 22
     from linkerbot_ffg_ros.calibration.poses import POSES
     for pose in POSES:
         assert '请双手' + pose.instruction + '，并保持。' in player.by_text
-    for filename in ('glove_manager.py', 'glove_entry.py', 'mcap_bridge.py'):
+    for filename in ('glove_manager.py', 'glove_entry.py', 'mcap_bridge.py', 'pedals.py'):
         tree = ast.parse((ROOT / 'repos/w1_vr_glove_integration' / filename).read_text())
         for node in ast.walk(tree):
             if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
@@ -134,7 +134,7 @@ def test_packaged_bank_has_all_real_prompts_and_nonzero_audio():
 
 def test_every_new_runtime_source_has_python310_syntax():
     for name in ('local_voice.py', 'generate_voice_assets.py', 'glove_manager.py',
-                 'glove_entry.py', 'mcap_bridge.py'):
+                 'glove_entry.py', 'mcap_bridge.py', 'pedals.py'):
         ast.parse((ROOT / 'repos/w1_vr_glove_integration' / name).read_text(), feature_version=(3, 10))
 
 

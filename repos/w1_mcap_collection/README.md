@@ -47,12 +47,12 @@ bash /home/dexforce/linkerhand/repos/w1_mcap_collection/record.sh cancel
 
 ## 数据范围
 
-详见 topics.yaml。默认包括本体state/action、左右手最终action与真实state、底盘指令和反馈、头部双目JPEG与标定、VR位姿、TF和模式。
+默认 MCAP 记录 30 路。完整分组见 [topics.yaml](topics.yaml)。其中十路是前后两台 Orbbec 各自的 RGB、深度、CameraInfo、原始 PointCloud2，加上前后两路实体 LaserScan。保留原始 ROS 消息供后续导出。
 
 - 手action只记录 `/linkerhand/w1/ee/{left,right}/command`，位置0..100。手state来自 `/feedback/ee/{left,right}`。
 - 不录制手套21通道原始输入、motor_cmd中间映射、厂家VR手指命令。
 - 相机保存 `/camera/kfc_compressed` 原JPEG字节；已验证现场正常流为3840x1080左右拼接，录制元数据从现场消息读取尺寸。无图像时尺寸为null。
-- 不录腕部相机、深度或低分辨率preview。旧collect_depth=true仅报告忽略，不订阅不存在的腕部。
+- 底盘前后深度默认启用。旧参数 collect_depth 仅为兼容保留。头部状态归入辅助组。
 - 可选辅助话题通过 `collect_auxiliary` 参数启用。
 - 原Header时间戳保留；无Header接口以rosbag接收时间索引。采集不重采样、不伪造零值。
 
@@ -84,7 +84,7 @@ bash /home/dexforce/linkerhand/repos/w1_mcap_collection/record.sh cancel
 跨录制、跨服务重启和跨机器人重启复用，不自动按时间过期。
 开始录制只复制内存中的设备信息到该回合的 `device_info.json`，不再临时启动
 快照进程。`snapshot_metadata` 记录来源、原始获取时间和是否已持久化；
-原来的关节名称、相机标定、图像尺寸字段保持不变。
+关节名称和图像尺寸来自快照。头部标定另由常驻监听器按下述规则关联。
 
 首次获取失败或信息不完整时仍允许录制，缺项记录到 warnings，且不把不完整信息
 保存为永久缓存。之后每次按键不会重复等待，修复设备后可以在没有活动录制时执行：
@@ -93,7 +93,7 @@ bash /home/dexforce/linkerhand/repos/w1_mcap_collection/record.sh cancel
 bash /home/dexforce/linkerhand/repos/w1_mcap_collection/record.sh refresh
 ```
 
-更换硬件、修改标定或相机分辨率后也需要执行此命令。刷新成功会原子更新缓存及
+更换硬件或相机分辨率后可执行此命令刷新固定信息。刷新成功会原子更新缓存及
 当前采集器的内存信息；失败保留原缓存并返回错误，不改写已有回合。
 
 VR 周期状态查询优先读取属于当前采集进程的状态文件，并校验采集器和录制工作
@@ -135,3 +135,14 @@ Python `mcap` 包用于保存校验，原生 `rosbag2_storage_mcap` 插件用于
 检查通过后再启动采集服务，并确认不再反复重启。最终验收需短录制、停止保存、
 MCAP 全量读回和进程收尾检查；同时检查 `coverage_status` / `missing_topics`，
 环境检查通过本身不代表现场话题完整。
+
+## 头部标定和转场质量检查
+
+采集器在独立 ROS 执行器上监听 `/camera/kfc_calib_data`。每段 `device_info.json` 的 `head_calibration.versions` 按内容摘要保存原始 YAML 和相机序列号，`history` 记录首次关联、换版、无效、失流和恢复时间。连续 3 秒未收到广播后标记缺失；开始时不会将上次开机的缓存作为本段标定。兼容字段 `head_calibration_raw` 在本段首次获得有效标定后填写。时间字段是 PC1 接收或观察状态变化的时间。
+
+单人模式会生成 `operator_events.jsonl`。结束后可用下列命令遍历所有 MCAP 分卷，按十路新增话题核对消息数、平均频率、最大间隔及各操作阶段的缺流。统计使用 MCAP 记录时钟。短段、低频话题和转场要结合目标频率判断。
+
+```bash
+cd /home/dexforce/linkerhand
+runtime/venvs/mcap-collection/bin/python repos/w1_mcap_collection/audit_streams.py /home/dexforce/collection_data/vr_glove/raw/episode_000000
+```

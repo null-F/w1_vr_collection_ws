@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Use the existing recorder under its CLI lock, tracking only VR-owned episodes."""
+"""Use the existing recorder under its CLI lock, keeping VR and pedal episode ownership separate."""
 import argparse
 import fcntl
 import json
@@ -8,8 +8,9 @@ from pathlib import Path
 import sys
 import time
 import uuid
-CORE=Path('/home/dexforce/linkerhand/repos/w1_mcap_collection')
-RUNTIME=Path('/home/dexforce/linkerhand/runtime')
+ROOT = Path(__file__).resolve().parents[2]
+CORE = ROOT / 'repos/w1_mcap_collection'
+RUNTIME = Path(os.environ.get('W1_MCAP_RUNTIME', ROOT / 'runtime'))
 OWNER=RUNTIME/'vr_mcap_owner.json'
 sys.path.insert(0,str(CORE))
 from storage import read_json,atomic_json,identity_alive
@@ -51,7 +52,7 @@ def read_cached_status(pid):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('command',choices=['start','stop','cancel','status']);parser.add_argument('--task');a=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('command',choices=['start','stop','cancel','status','pedal']);parser.add_argument('--task');a=parser.parse_args()
     if a.command in ('stop','cancel') and not OWNER.exists():
         print(json.dumps({'success':True,'result':{'save_status':'not_owned'}}));return 0
     node=None
@@ -84,13 +85,20 @@ def main():
         try:
             ok,state=call('status')
             if not ok:raise RuntimeError(str(state))
+            if a.command == 'pedal':
+                # The server rechecks ownership at execution; no toggle is retried blindly.
+                service = 'pedal_stop' if state.get('recording') else 'pedal_start'
+                ok, result = call(service)
+                print(json.dumps({'success': ok, 'result': brief(result)}, ensure_ascii=False))
+                return 0 if ok else 1
             owner=read_json(OWNER,{})
             # Recover an interrupted start while still holding the same CLI lock.
             if owner and not owner.get('episode_dir'):
                 runtime=read_json(RUNTIME/'mcap_recorder_state.json',{})
                 candidate=runtime.get('active') or runtime.get('last_result') or {}
                 episode=candidate.get('episode_dir','')
-                if (episode and Path(episode).parent.parent.name==owner.get('task')
+                if (candidate.get('source') == 'vr' and candidate.get('request_token') == owner.get('token')
+                    and episode and Path(episode).parent.parent.name==owner.get('task')
                     and candidate.get('started_wall_ns',0)>=owner.get('requested_ns',0)):
                     owner['episode_dir']=episode;atomic_json(OWNER,owner)
             owned=owner.get('episode_dir') if owner else None
@@ -109,7 +117,7 @@ def main():
                 response=wait_future(node,c.call_async(req),10)
                 if not all(v.successful for v in response.results):raise RuntimeError('Task parameter rejected')
                 atomic_json(OWNER,{'token':uuid.uuid4().hex,'task':task,'requested_ns':time.time_ns(),'episode_dir':None})
-                ok,result=call('start_recording')
+                ok,result=call('vr_start')
                 if ok and result.get('episode_dir'):
                     owner=read_json(OWNER,{});owner['episode_dir']=result['episode_dir'];atomic_json(OWNER,owner)
                 print(json.dumps({'success':ok,'result':brief(result)},ensure_ascii=False));return 0 if ok else 1
@@ -117,7 +125,7 @@ def main():
                 result={'save_status':'not_owned'};ok=True
             elif state.get('recording'):
                 if not owned or state.get('episode_dir')!=owned:raise RuntimeError('Active episode is not owned by VR; refusing to stop it')
-                ok,result=call('cancel_recording' if a.command=='cancel' else 'stop_recording')
+                ok,result=call('vr_cancel' if a.command=='cancel' else 'vr_stop')
                 if result.get('episode_dir')==owned and result.get('save_status') in ['saved','failed','cancelled']:OWNER.unlink(missing_ok=True)
             else:
                 last=state.get('last_result') or {}

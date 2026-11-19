@@ -3,7 +3,9 @@
 部署在 PC1 /home/dexforce/linkerhand/repos/w1_vr_glove_integration。
 厂家 /home/dexforce/w1 下文件保持原样；服务附加配置加载此目录中的运行时补丁。
 
-## 操作
+单人模式及三联踏板部署见[PC1 三联踏板单人遥操](PEDALS.md)。
+
+## 双人模式操作
 
 开机后双 L6 驱动和 VR tele 服务自动启动。USB 准备与管理服务后台运行，手套不会自动跟随。
 首次部署后重新打开或刷新 VR 网页，使 X 键补丁加载。

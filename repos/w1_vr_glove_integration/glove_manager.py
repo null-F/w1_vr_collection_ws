@@ -10,6 +10,8 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from operator_journal import event as stage_event
+from operator_state import settings, process_start
 from local_voice import Voice  # also re-exported for mcap_bridge
 
 HERE = Path(__file__).resolve().parent
@@ -19,6 +21,7 @@ EVENT = 'LINKERHAND_GLOVE_EVENT '
 
 class Manager:
     def __init__(self, command=None, voice=None, runtime=RUNTIME):
+        self.single = settings()['mode'] == 'single'
         self.command = command or ['bash', str(HERE / 'run_gloves.sh')]
         self.voice = voice if voice is not None else Voice()
         self.runtime = Path(runtime)
@@ -30,18 +33,25 @@ class Manager:
         self.session = None
         self.requests = collections.OrderedDict()
         self.worker = None
+        self.last_stage = None
         self._save()
 
     def status(self):
         with self.lock:
             return {'phase': self.phase, 'stage': self.stage, 'session': self.session,
-                    'pid': self.proc.pid if self.proc else None}
+                    'pid': self.proc.pid if self.proc else None,
+                    'pid_start': process_start(self.proc.pid) if self.proc else None,
+                    'manager_pid': os.getpid(), 'manager_start': process_start(os.getpid())}
 
     def _save(self):
         data = json.dumps(self.status(), ensure_ascii=False)
         tmp = self.runtime / 'state.json.tmp'
         tmp.write_text(data)
         tmp.replace(self.runtime / 'state.json')
+        stage = (self.phase, self.stage, self.session)
+        if self.single and stage != self.last_stage:
+            stage_event('glove', dict(phase=self.phase, stage=self.stage, session=self.session))
+            self.last_stage = stage
 
     def toggle(self, request_id):
         if not isinstance(request_id, str) or not 1 <= len(request_id) <= 160:
@@ -60,7 +70,7 @@ class Manager:
             self.stage = None
             self.session = str(time.time_ns())
             log = self.runtime / ('glove_' + self.session + '.log')
-            env = dict(os.environ, PYTHONUNBUFFERED='1')
+            env = dict(os.environ, PYTHONUNBUFFERED='1', W1_GLOVE_SESSION=self.session)
             try:
                 self.proc = subprocess.Popen(self.command, env=env, stdin=subprocess.DEVNULL,
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
@@ -95,9 +105,10 @@ class Manager:
                     self.stage = stage
                     # The glove wrapper speaks before entering each calibration step.
             elif kind == 'ready':
-                if self.phase != 'following':
-                    self.phase = 'following'
-                    self.voice.say('标定完成，手套遥操已启动。')
+                phase = 'ready' if self.single else 'following'
+                if self.phase != phase:
+                    self.phase = phase
+                    self.voice.say('标定完成。' if self.single else '标定完成，手套遥操已启动。')
             elif kind == 'failed':
                 self.phase = 'failed'
                 self.voice.clear()

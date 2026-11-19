@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import traceback
 import urllib.request
+from operator_state import settings
 
 HERE = Path(__file__).resolve().parent
 MANAGER = 'http://127.0.0.1:18770/toggle'
@@ -28,6 +29,7 @@ def send_toggle(request_id):
 
 
 def patch_low_frequency(module):
+    single = settings()['mode'] == 'single'
     original_decode = module.decode_message
     def decode(raw):
         try:
@@ -48,6 +50,8 @@ def patch_low_frequency(module):
     def initialize(self, *args, **kwargs):
         original_dispatch = kwargs['message_dispatcher']
         async def dispatch(ws, msg, addr):
+            if single and isinstance(msg, (GloveControl, McapCancel)):
+                return
             if isinstance(msg, McapCancel):
                 from mcap_bridge import request_cancel
                 request_cancel()

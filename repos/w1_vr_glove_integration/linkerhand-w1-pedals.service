@@ -1,0 +1,18 @@
+[Unit]
+Description=LinkerHand W1 single-operator USB pedals
+Wants=linkerhand-w1-glove-manager.service linkerhand-w1-mcap.service
+After=linkerhand-w1-glove-manager.service linkerhand-w1-mcap.service
+
+[Service]
+Type=simple
+User=dexforce
+SupplementaryGroups=input
+RuntimeDirectory=linkerhand-w1-pedals
+RuntimeDirectoryMode=0755
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /home/dexforce/linkerhand/repos/w1_vr_glove_integration/pedals.py
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

@@ -17,7 +17,8 @@ def valid_task(task):
 
 
 class Engine:
-    def __init__(self, runtime):
+    def __init__(self, runtime, calibration=None):
+        self.calibration = calibration
         self.runtime=Path(runtime);self.runtime.mkdir(parents=True,exist_ok=True)
         self.state_file=self.runtime/'mcap_recorder_state.json'
         self.active=None;self.proc=None;self.log_handle=None;self.last_result=None
@@ -35,9 +36,9 @@ class Engine:
 
     def status(self):
         return {'phase':self.phase,'recording':bool(self.active), 'episode_dir':self.active['episode_dir'] if self.active else None,
-                'last_result':self.last_result}
+                'source':(self.active or {}).get('source'), 'last_result':self.last_result}
 
-    def start(self,task,data_root,topics,snapshot,warnings):
+    def start(self,task,data_root,topics,snapshot,warnings,source='manual',stage=None,token=None):
         self.poll()
         if self.active:raise RuntimeError('A recording or recovery is already active')
         if not valid_task(task):raise ValueError('task_name must be 1-80 letters/digits/_/-')
@@ -46,11 +47,16 @@ class Engine:
         episode=raw/f'episode_{max(nums,default=-1)+1:06d}';episode.mkdir(exist_ok=False)
         session={'episode_dir':str(episode),'data_root':str(root),'task':task,'id':uuid.uuid4().hex,
                  'started_wall_ns':time.time_ns(),'topics':topics,'warnings':warnings,
-                 'owner':process_identity(os.getpid()),'worker':None}
+                 'owner':process_identity(os.getpid()),'worker':None,'source':source}
+        if token:session['request_token'] = token
+        if stage is not None:session['operator_stage'] = stage
         self.active=session;self.phase='starting'
         try:
             atomic_json(episode/'episode.json',session)
-            atomic_json(episode/'device_info.json',snapshot)
+            if self.calibration:
+                self.calibration.attach(episode/'device_info.json', snapshot)
+            else:
+                atomic_json(episode/'device_info.json',snapshot)
             self.persist()
             command=['ros2','bag','record','-s','mcap','-o',str(episode/'raw'),
                      '--include-unpublished-topics','--qos-profile-overrides-path',str(HERE/'qos_overrides.yaml'),
@@ -109,10 +115,23 @@ class Engine:
                 raise RuntimeError('Verified recording process remains alive; refusing a new episode')
         finally:
             if self.log_handle is not None:self.log_handle.close();self.log_handle=None
+        stopped_ns = time.time_ns()
+        if self.calibration:
+            try:
+                self.calibration.detach()
+            except OSError as exc:
+                cleanup_errors.append(f'Cannot write live calibration: {exc}')
+        if 'operator_stage' in s and not cancel:
+            try:
+                from operator_journal import finish_episode
+                finish_episode(s['operator_stage'], stopped_ns, episode)
+            except (OSError, ValueError) as exc:
+                cleanup_errors.append(f'Cannot write operator stages: {exc}')
         validation=validate_bag(episode/'raw',s['topics'])
         result=file_result(validation,read_json(episode/'worker_result.json'),reason)
         result.update(episode_dir=str(episode),started_wall_ns=s['started_wall_ns'],finished_wall_ns=time.time_ns(),
-                      warnings=s.get('warnings',[]),expected_topics=s['topics'])
+                      warnings=s.get('warnings',[]),expected_topics=s['topics'],
+                      source=s.get('source'),request_token=s.get('request_token'))
         if cleanup_errors:result['errors'].extend(cleanup_errors);result['save_status']='failed'
         self.active=None;self.proc=None
         self.phase='saved' if result['save_status']=='saved' else 'failed'

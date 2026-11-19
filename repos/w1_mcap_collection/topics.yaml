@@ -6,8 +6,16 @@ continuous:
   - /feedback/odom
   - /feedback/omni_chassis_motor
   - /camera/kfc_compressed
-  - /camera/kfc_calib_data
-  - /camera/kfc_status
+  - /orbbec/front/rgb
+  - /orbbec/front/depth
+  - /orbbec/front/camera_info
+  - /orbbec/front/pointcloud2_raw
+  - /orbbec/rear/rgb
+  - /orbbec/rear/depth
+  - /orbbec/rear/camera_info
+  - /orbbec/rear/pointcloud2_raw
+  - /laser_scan/front
+  - /laser_scan/rear
   - /feedback/robot_status
   - /supervisor/system_mode
   - /supervisor/system_status
@@ -24,6 +32,7 @@ static:
   - /tf_static
   - /robot_description
 optional:
+  - /camera/kfc_status
   - /feedback/battery_status
   - /imu/chassis
   - /imu/chassis/refined

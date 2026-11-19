@@ -9,18 +9,23 @@ import signal
 import subprocess
 import sys
 import time
+import threading
 from pathlib import Path
 import yaml
 import rclpy
 from rclpy.node import Node
-from rclpy.executors import ExternalShutdownException
+from rclpy.executors import ExternalShutdownException, SingleThreadedExecutor
 from rclpy.qos import qos_profile_sensor_data
 from std_srvs.srv import Trigger
 from engine import Engine
-from device_snapshot import DeviceSnapshot
-from storage import atomic_json, process_identity
+from device_snapshot import DeviceSnapshot, HeadCalibration
+from storage import atomic_json, process_identity, read_json
 
 HERE=Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent / 'w1_vr_glove_integration'))
+from operator_state import settings
+from operator_journal import begin_episode
+
 RUNTIME=Path(os.environ.get('W1_MCAP_RUNTIME','/home/dexforce/linkerhand/runtime'))
 DATA_ROOT=os.environ.get('W1_MCAP_DATA_ROOT','/home/dexforce/collection_data')
 
@@ -38,15 +43,77 @@ class Recorder(Node):
         super().__init__('w1_mcap_recorder')
         self.declare_parameter('task_name','');self.declare_parameter('data_root',DATA_ROOT)
         self.declare_parameter('collect_auxiliary',False)
-        self.declare_parameter('collect_depth',False)  # compatibility only: no depth hardware in this profile
-        self.engine=Engine(RUNTIME)
+        self.declare_parameter('collect_depth',False)  # backward-compatible parameter
+        self.operator_mode = settings()['mode']
+        self.calibration = HeadCalibration()
+        self.engine=Engine(RUNTIME, self.calibration)
         self.config=yaml.safe_load((HERE/'topics.yaml').read_text())
         self.device_snapshot=DeviceSnapshot(RUNTIME/'device_snapshot.json',capture_device_snapshot)
         self.get_logger().info('Device snapshot: '+json.dumps(self.device_snapshot.describe()))
+        if self.engine.active:
+            path = Path(self.engine.active['episode_dir']) / 'device_info.json'
+            if path.is_file():
+                metadata = json.loads(path.read_text())
+                if 'head_calibration' in metadata:
+                    self.calibration.attach(path, metadata)
         self.engine.persist()  # Publish the current recorder identity for read-only status.
         for name,callback in [('start_recording',self.start),('stop_recording',self.stop),('cancel_recording',self.cancel),('status',self.status),('refresh_snapshot',self.refresh_snapshot)]:
             self.create_service(Trigger,'~/'+name,self.wrap(callback))
+        self.create_service(Trigger, '~/pedal_start', self.wrap(self.pedal_start))
+        self.create_service(Trigger, '~/pedal_stop', self.wrap(self.pedal_stop))
+        self.create_service(Trigger, '~/vr_start', self.wrap(self.vr_start))
+        self.create_service(Trigger, '~/vr_stop', self.wrap(lambda: self.vr_end(False)))
+        self.create_service(Trigger, '~/vr_cancel', self.wrap(lambda: self.vr_end(True)))
         self.create_timer(.5,self.poll)
+        # Start/stop services can block on the bag process. Observe camera changes independently.
+        from std_msgs.msg import String
+        self.cal_node = Node('w1_head_calibration_monitor', use_global_arguments=False)
+        self.cal_node.create_subscription(String, '/camera/kfc_calib_data',
+                                          lambda m: self.calibration.observe(m.data), 10)
+        self.cal_node.create_timer(.5, self.calibration.tick)
+        self.cal_executor = SingleThreadedExecutor()
+        self.cal_executor.add_node(self.cal_node)
+        self.cal_thread = threading.Thread(target=self.cal_spin, daemon=True)
+        self.cal_thread.start()
+
+    def cal_spin(self):
+        try:
+            self.cal_executor.spin()
+        except ExternalShutdownException:
+            pass
+
+    def close_monitor(self):
+        self.cal_executor.shutdown()
+        self.cal_thread.join()
+        self.cal_node.destroy_node()
+
+    def vr_start(self):
+        if self.operator_mode != 'dual':
+            raise RuntimeError('VR recording buttons are disabled in single-operator mode')
+        intent = read_json(RUNTIME/'vr_mcap_owner.json', {})
+        if not intent.get('token') or intent.get('episode_dir'):
+            raise RuntimeError('Missing pending VR recording request')
+        return self.start(source='vr', task=intent['task'], token=intent['token'])
+
+    def vr_end(self, cancel):
+        active = self.engine.active or {}
+        owner = read_json(RUNTIME/'vr_mcap_owner.json', {})
+        if (active.get('source') not in (None, 'vr') or not owner.get('episode_dir')
+                or owner['episode_dir'] != active.get('episode_dir')
+                or (active.get('source') == 'vr' and owner.get('token') != active.get('request_token'))):
+            raise RuntimeError('Active recording does not match VR ownership')
+        return self.cancel() if cancel else self.stop()
+
+    def pedal_start(self):
+        if self.operator_mode != 'single':
+            raise RuntimeError('Single-operator mode is disabled')
+        task = json.loads((HERE.parent / 'w1_vr_glove_integration/mcap_settings.json').read_text())['task_name']
+        return self.start(source='pedal', task=task)
+
+    def pedal_stop(self):
+        if self.operator_mode != 'single' or (self.engine.active or {}).get('source') != 'pedal':
+            raise RuntimeError('Active recording is not pedal-owned')
+        return self.stop()
 
     def wrap(self,fn):
         def callback(req,response):
@@ -63,11 +130,11 @@ class Recorder(Node):
         try:self.engine.poll()
         except Exception as exc:self.get_logger().error(f'Recorder monitoring failed: {exc}')
 
-    def start(self):
+    def start(self, source='manual', task=None, token=None):
         topics=sum([self.config[k] for k in ['continuous','command_or_event','static']],[])
         if self.get_parameter('collect_auxiliary').value:topics+=self.config['optional']
         warnings=[]
-        if self.get_parameter('collect_depth').value:warnings.append('collect_depth ignored: W1 profile has no wrist/depth stream')
+        if self.get_parameter('collect_depth').value:warnings.append('collect_depth is legacy: front/rear depth are included by default')
         for t in topics:
             if not self.get_publishers_info_by_topic(t):warnings.append(f'{t}: no publisher at start')
         snap,snapshot_warnings=self.device_snapshot.for_episode()
@@ -77,8 +144,9 @@ class Recorder(Node):
                           'action_topics':['/linkerhand/w1/ee/left/command','/linkerhand/w1/ee/right/command'],
                           'state_topics':['/feedback/ee/left','/feedback/ee/right']},
                     topic_groups=self.config,warnings=warnings)
-        return self.engine.start(str(self.get_parameter('task_name').value).strip(),
-                                 str(self.get_parameter('data_root').value),topics,snap,warnings)
+        stage = begin_episode() if self.operator_mode == 'single' else None
+        return self.engine.start(task or str(self.get_parameter('task_name').value).strip(),
+                                 str(self.get_parameter('data_root').value),topics,snap,warnings,source,stage,token)
 
     def stop(self):
         if not self.engine.active:raise RuntimeError('Not recording; use status for the previous result')
@@ -141,7 +209,9 @@ def main():
         try:
             if node is not None and node.engine.active:node.engine.finalize(exit_reason)
         finally:
-            if node is not None:node.destroy_node()
+            if node is not None:
+                node.close_monitor()
+                node.destroy_node()
             if rclpy.ok():rclpy.shutdown()
             lock.close()
 

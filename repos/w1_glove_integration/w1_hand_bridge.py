@@ -2,6 +2,9 @@
 """Forward original L6 glove targets using the DexForce message and position units."""
 import argparse
 import math
+import os
+from pathlib import Path
+import sys
 import time
 
 JOINTS = ['T_MCP', 'T_CMC_YAW', 'IF_MCP_PITCH', 'MF_MCP_PITCH', 'RF_MCP_PITCH', 'LF_MCP_PITCH']
@@ -15,6 +18,9 @@ def convert_motor(values):
 
 
 def main():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'w1_vr_glove_integration'))
+    from operator_state import settings, hand_enabled, publish, TTL
+    single = settings()['mode'] == 'single'
     import rclpy
     from rclpy.node import Node
     from rclpy.qos import QoSProfile
@@ -31,6 +37,9 @@ def main():
             super().__init__('linkerhand_w1_l6_bridge')
             self.publishers_by_side = {}
             self.warn_at = {}
+            self.session = os.environ.get('W1_GLOVE_SESSION')
+            self.last_valid = {}
+            self.heartbeat_at = 0.0
             for side in ['left', 'right']:
                 topic = f'/linkerhand/{"preview" if args.preview else "w1"}/ee/{side}/command'
                 self.publishers_by_side[side] = self.create_publisher(EEJointControl, topic, QoSProfile(depth=1))
@@ -48,6 +57,22 @@ def main():
                     self.get_logger().warning(f'{side}: invalid L6 target: {exc}')
                     self.warn_at[side] = now
                 return
+            if single:
+                stamp = msg.header.stamp
+                ns = stamp.sec * 10**9 + stamp.nanosec
+                now = time.monotonic()
+                if not self.session or not 0 <= time.time_ns() - ns < TTL * 1e9:
+                    return
+                self.last_valid[side] = now
+                if (len(self.last_valid) == 2 and now - min(self.last_valid.values()) < TTL / 2
+                        and now - self.heartbeat_at >= 0.03):
+                    try:
+                        publish('hands.json', session=self.session)
+                    except FileNotFoundError:
+                        return
+                    self.heartbeat_at = now
+                if not hand_enabled(ns):
+                    return
             command = EEJointControl()
             command.header = msg.header
             command.mode = 0

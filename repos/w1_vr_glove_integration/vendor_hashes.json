@@ -10,5 +10,7 @@
   "src/backend/recording/button_controller.py": "d342d3fd3b04c9916a6e9ea322c1c4b991695f48e46a9b69191eabe7604e4394",
   "src/backend/recording/session_controller.py": "c6855e2e19569ba51e0c83ef0adc53c72455f0f3c8d7e7530b6ba86d60d9f728",
   "src/backend/pose/message_handlers.py": "e02a1ffbb2359850a92e090942906730820fd311df5e4e764a3ee4b174c170bb",
-  "src/backend/pose/pose_server.py": "224d538e7c7c7af374ea828ebbb2ccae492dfae18a5bfb92b60968c6657bc577"
+  "src/backend/pose/pose_server.py": "224d538e7c7c7af374ea828ebbb2ccae492dfae18a5bfb92b60968c6657bc577",
+  "src/backend/pose/pose_parser.py": "94ea67f14a24bbf58e7b4ac0569cf07fbac0c24f65a908a6d23c19cfcc38b69b",
+  "src/frontend/index.html": "5a68521a24f51819049e92d18c27682177a2ddb1227b0dd1d24a30570ce7ec4e"
 }

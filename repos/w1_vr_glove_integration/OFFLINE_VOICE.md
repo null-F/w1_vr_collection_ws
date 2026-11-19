@@ -38,7 +38,7 @@ alsa_output.usb-Yundea_Technology_Yundea_M1051_433039373936312E-01.analog-stereo
 
 - `local_voice.py`：仅 Python 标准库；PC1 上需要 `pulseaudio-utils` 提供 `paplay` / `pactl`。
 - `../../config/w1/voice.json`：PC1 本地 Pulse socket、指定 USB sink、超时。
-- `../../config/w1/voice_prompts.json`：20 条固定中文提示的 ID 和原文。
+- `../../config/w1/voice_prompts.json`：22 条固定中文提示的 ID 和原文。
 - `audio/zh_CN/`：WAV 和清单，校验 SHA256、原文、文件名、PCM16 格式、完整性和时长。
 - `generate_voice_assets.py`：开发/制包工具，离线生成 WAV，机器人运行时不用它，也不需要合成模型。
 - `runtime/voice/playback.lock`：本项目跨进程播放互斥；锁文件不要在进程运行中删除，否则可能产生两个互不相同的锁。

@@ -81,17 +81,25 @@ def test_failed_language_check_does_not_publish_manifest(synthesis, monkeypatch,
     assert not (output / 'manifest.json').exists()
 
 
-def test_all_delivered_audio_has_checked_trace_and_corrected_settings():
+def test_delivered_audio_matches_packaged_generator_and_source_clips():
+    import wave
     assets = ROOT / 'repos/w1_vr_glove_integration/audio/zh_CN'
     manifest = json.loads((assets / 'manifest.json').read_text())
     assert manifest['schema_version'] == 2
-    assert manifest['generator']['voice'] == 'cmn-latn-pinyin'
-    assert manifest['generator']['input_encoding'] == 'UTF-8 (engine -b 1)'
-    assert len(manifest['prompts']) == 20
+    assert manifest['generator']['voice'] == 'zh-CN-XiaoxiaoNeural'
+    catalog = json.loads((ROOT / 'config/w1/voice_prompts.json').read_text())
+    assert {k:v['text'] for k,v in manifest['prompts'].items()} == catalog
     for entry in manifest['prompts'].values():
-        generator.validate_mandarin_phonemes(entry['phonemes'])
         assert hashlib.sha256((assets / entry['file']).read_bytes()).hexdigest() == entry['sha256']
-    assert manifest['prompts']['record_saved']['sha256'] != 'b1bbc74b847e12f408944faddab1278a2e1ed6f38db07695a03622b69a031acc'
+        if 'clip' in entry:
+            clip = entry['clip']
+            source = assets / manifest['prompts'][clip['source']]['file']
+            with wave.open(str(source)) as original, wave.open(str(assets / entry['file'])) as excerpt:
+                original.setpos(clip['first_frame'])
+                n = clip['end_frame'] - clip['first_frame']
+                assert n == excerpt.getnframes()
+                assert excerpt.readframes(n) == original.readframes(n)
+
 
 
 def test_runtime_rejects_old_schema_instead_of_accepting_faulty_bank(tmp_path):
