@@ -24,7 +24,7 @@ if [[ "$W1_GLOVE_SDK" == ffg ]]; then
     python "$HERE/ffg_entry.py" --check
 fi
 bash "$HERE/prepare_glove_usb.sh"
-ports_text=$(python "$HERE/glove_ports.py")
+ports_text=$(python "$HERE/glove_ports.py" --reset-hub)
 mapfile -t ports <<< "$ports_text"
 ports_arg="['${ports[0]}','${ports[1]}']"
 python "$HERE/w1_hand_bridge.py" "${preview[@]}" &

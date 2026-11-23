@@ -21,7 +21,8 @@ Ctrl+C结束手套/桥接。停止发送新目标不等于电机失能。桥接�
 ## 接口与运行
 
 手套输入仅选择VID:PID=1a86:7523的两个CH340串口，不扫描原有RS485/IMU串口。驱动未安装时入口会直接报告缺失。
-启动入口会按需临时屏蔽brltty-udev.service（仅/run、本次开机有效），并从runtime/drivers加载已编译的CH341模块；没有执行make install、修改/lib/modules、替换内核或永久禁用服务。重启后由同一入口重新加载。需撤销临时屏蔽时执行 `sudo systemctl unmask --runtime brltty-udev.service`。
+启动入口会永久屏蔽brltty-udev.service（开机时它会先于CH341驱动抢占手套并使其卡死在-110），安装 `60-linkerhand-glove-hub.rules`，并从runtime/drivers加载已编译的CH341模块；没有执行make install、修改/lib/modules或替换内核。CH341模块每次开机由同一入口重新加载。需撤销屏蔽时执行 `sudo systemctl unmask brltty-udev.service`。
+每次启动手套前，`glove_ports.py --reset-hub` 复位两只手套共用的USB Hub，再等待两个串口重新出现，使每次会话都是复位后的首次打开。仅当两只手套在同一Hub且该Hub上没有其他设备时才复位；分插两个口时不复位。udev规则把Genesys `05e3:0610` Hub节点交给dialout组，使dexforce服务用户可以复位。
 原手套L6六个电机量0..255经 `100*(255-x)/255` 转为厂家0..100；对应厂家库setPosMapping的逆变换，六个寄存器顺序不变。
 新 SDK 通过 LinkerH JointState 输出接现有桥接，W1 配置为30Hz、平滑alpha=0.5、max_step=20。使用新 SDK 的五态标定、归一化L6映射和失联处理，算法和首次平滑行为不保证与旧 SDK 数值等价；六轴实手方向和跟随效果须重新验收。
 桥接每收到一帧就直接换算并转发，保留原消息时间戳；不增加定时重采样、新帧去重、平滑、变化率限制或反馈锁存。仅校验六维输入数值格式，不改变有效目标。
@@ -47,3 +48,5 @@ Ctrl+C结束手套/桥接。停止发送新目标不等于电机失能。桥接�
 当前入口采用 runtime/drivers/linux-5.15.148-ch341/ch341.ko，源文件来自 Linux v5.15.148，以当前 NVIDIA RT 内核匹配头文件编译；未替换内核、未执行系统安装。请使用独立 USB 口或另行验证的扩展坞。双手同时直插的复测尚待完成。
 
 2026-09-29 双手独立 USB 验证：路径 1-3.2 与 1-2.1.3，标准 CH341 驱动；双手同时读取、关闭、重新打开连续 5 轮通过。每手每轮 54–57 帧、21 通道，无 EIO。保留此连接方式，实手标定和运动验收仍由用户完成。
+
+双手共用 Genesys Hub `1-2.1.3` 时：关闭后再开约第 3 轮出现 EIO / `failed to send control message: -110`；对手套节点写 `authorized` 或 usbreset 均无法恢复，复位上游 Hub 可以恢复。启动入口因此在每次打开前复位该 Hub。

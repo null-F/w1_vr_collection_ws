@@ -16,7 +16,7 @@ PC2 的 `yundea_speaker` 是隧道别名，不能直接作为 PC1 的真实声�
 本次明确指定 PC1 sink：
 
 ```text
-alsa_output.usb-Yundea_Technology_Yundea_M1051_433039373936312E-01.analog-stereo
+alsa_output.usb-Yundea_Technology_Yundea_M1051_4250315A36303006-01.analog-stereo
 ```
 
 不使用系统默认 sink，不主动改默认声卡、音量、静音状态或模块；指定 sink 不存在时失败，不自动尝试板载声卡。

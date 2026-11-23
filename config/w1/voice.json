@@ -1,6 +1,6 @@
 {
   "server": "unix:/run/user/{uid}/pulse/native",
-  "sink": "alsa_output.usb-Yundea_Technology_Yundea_M1051_433039373936312E-01.analog-stereo",
+  "sink": "alsa_output.usb-Yundea_Technology_Yundea_M1051_4250315A36303006-01.analog-stereo",
   "assets": "repos/w1_vr_glove_integration/audio/zh_CN",
   "lock_wait_seconds": 20.0,
   "playback_grace_seconds": 3.0,

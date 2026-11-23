@@ -11,7 +11,7 @@ if [[ "$W1_GLOVE_SDK" == ffg ]]; then
     python "$INTEGRATION/ffg_entry.py" --check
 fi
 test -d /sys/module/ch341 || { echo 'CH341 preparation service is not ready.' >&2; exit 1; }
-ports_text=$(python "$INTEGRATION/glove_ports.py")
+ports_text=$(python "$INTEGRATION/glove_ports.py" --reset-hub)
 mapfile -t ports <<< "$ports_text"
 ports_arg="['${ports[0]}','${ports[1]}']"
 python "$INTEGRATION/w1_hand_bridge.py" &

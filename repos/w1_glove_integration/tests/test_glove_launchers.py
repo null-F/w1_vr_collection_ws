@@ -87,8 +87,11 @@ elif '--check' not in args:
     if voices:
         assert voices[0][1:] == ['--check']
         assert calls.index(voices[0]) < next(i for i, c in enumerate(calls) if Path(c[0]).name == 'w1_hand_bridge.py')
+    port_calls = [c for c in calls if Path(c[0]).name == 'glove_ports.py']
+    assert port_calls == [[port_calls[0][0], '--reset-hub']]
     bridges = [c for c in calls if Path(c[0]).name == 'w1_hand_bridge.py']
     assert len(bridges) == 1
+    assert calls.index(port_calls[0]) < calls.index(bridges[0])
     assert ('--preview' in bridges[0]) == ('--preview' in options)
     pid = int(bridge_pid.read_text())
     assert not Path(f'/proc/{pid}').exists(), 'bridge must be reaped even on SDK failure'

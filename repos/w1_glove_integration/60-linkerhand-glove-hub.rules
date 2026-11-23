@@ -1,0 +1,3 @@
+# glove_ports.py --reset-hub runs as the dialout service user and needs write
+# access to the USB hub node that carries both CH340 gloves.
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="05e3", ATTR{idProduct}=="0610", GROUP="dialout", MODE="0664"
