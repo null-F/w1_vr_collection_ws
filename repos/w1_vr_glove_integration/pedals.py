@@ -11,7 +11,7 @@ import threading
 import time
 import uuid
 
-from operator_state import settings, publish, TTL
+from operator_state import settings, publish, fresh, TTL
 from operator_journal import event
 from patch_runtime import send_toggle
 from local_voice import Voice
@@ -53,6 +53,16 @@ class Keys:
         self.action = action
         self.press = None
         self.since = None
+        self.confirmed = False
+
+    def reconcile(self):
+        if not self.press:
+            return
+        if fresh('vr.json').get('press') == self.press:
+            self.confirmed = True
+        elif self.confirmed or time.monotonic() - self.since >= TTL:
+            self.press = self.since = None
+            self.confirmed = False
 
     def event(self, code, value):
         if code not in self.mapping or value not in (0, 1):
@@ -60,15 +70,20 @@ class Keys:
         name = self.mapping[code]
         if value == 0:
             self.down.discard(code)
-            if name == 'hold':
-                self.press = self.since = None
             return
         if code in self.down:
             return
         self.down.add(code)
         now = time.monotonic()
         if name == 'hold':
-            self.press, self.since = uuid.uuid4().hex, now
+            self.reconcile()
+            if self.press:
+                # Always accept a distinct stop edge, even inside the debounce window.
+                self.press = self.since = None
+                self.confirmed = False
+            elif now - self.last.get(code, -2) >= self.debounce:
+                self.press, self.since = uuid.uuid4().hex, now
+            self.last[code] = now
         elif now - self.last.get(code, -2) >= self.debounce:
             self.last[code] = now
             self.action(name)
@@ -128,10 +143,11 @@ def main():
     def report(connected, keys=None):
         nonlocal previous
         press = keys.press if keys else None
-        publish('pedal.json', connected=connected, press=press, since=keys.since if keys else None)
-        if (connected, press) != previous:
-            event('pedal', dict(connected=connected, held=bool(press), press=press))
-            previous = (connected, press)
+        held = bool(keys and config['hold_key'] in keys.down)
+        publish('pedal.json', connected=connected, held=held, press=press, since=keys.since if keys else None)
+        if (connected, held, press) != previous:
+            event('pedal', dict(connected=connected, held=held, requested=bool(press), press=press))
+            previous = (connected, held, press)
 
     while True:
         try:
@@ -148,6 +164,7 @@ def main():
                     if now - last_poll >= TTL:
                         raise OSError('Input loop paused; require release before rearming')
                     last_poll = now
+                    keys.reconcile()
                     if readable:
                         for code, value in events(fd):
                             keys.event(code, value)

@@ -47,7 +47,8 @@ class ReleaseSocket:
 
 
 class PoseGate:
-    def __init__(self, pose):
+    def __init__(self, pose, voice=None):
+        self.voice = voice
         self.pose = pose
         self.original = pose.handle_pose
         self.lock = asyncio.Lock()
@@ -55,7 +56,7 @@ class PoseGate:
         self.last_frame = self.ready_since = 0
         self.started_wall_ns = None
         self.watch = None
-        self.reported = object()
+        self.reported = None
 
     def permitted(self):
         p = self.pose
@@ -75,6 +76,8 @@ class PoseGate:
         if self.reported != press:
             event('follow', dict(enabled=bool(press), press=press, session=self.session))
             self.reported = press
+            if self.voice:
+                self.voice.say('跟随已开启。' if press else '跟随已关闭。')
 
     async def release(self):
         self.press = None
@@ -115,7 +118,8 @@ class PoseGate:
                     await self.release()
                     self.session, self.ready_since = session, received
                 press = pedal.get('press')
-                enabled = bool(press and pedal['since'] >= self.ready_since)
+                enabled = bool(press and pedal['since'] >= self.ready_since and
+                               (press == self.press or received - pedal['since'] < signals.TTL))
                 if self.press and press != self.press:
                     await self.release()
                     return

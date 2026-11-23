@@ -1,6 +1,6 @@
 # 固定中文提示音
 
-`zh_CN/` 包含本项目 22 条固定提示音；原文在 `config/w1/voice_prompts.json`。
+`zh_CN/` 包含本项目 24 条固定提示音；原文在 `config/w1/voice_prompts.json`。
 由 eSpeak NG 1.51 的 Mandarin 拼音发音模式 (`cmn-latn-pinyin`，显式 UTF-8 `-b 1`)以 speed=170 离线生成，不是任何具体人员的仿声，也不是原火山音色。
 生成工具为 Ubuntu 包 `espeak-ng 1.51+dfsg-12build1`，仅在开发机 `/tmp` 解压使用，语言数据来自开发机已安装的数据包。
 不包含合成引擎二进制或模型。每个 WAV 的原文、SHA256、时长及引擎信息见 `zh_CN/manifest.json`。

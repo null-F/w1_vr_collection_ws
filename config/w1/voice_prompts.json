@@ -20,5 +20,7 @@
   "record_started": "数据采集已开启。",
   "record_start_failed": "数据采集启动失败，请检查采集日志。",
   "glove_calibrated": "标定完成。",
-  "record_check_log": "请检查采集日志。"
+  "record_check_log": "请检查采集日志。",
+  "follow_on": "跟随已开启。",
+  "follow_off": "跟随已关闭。"
 }

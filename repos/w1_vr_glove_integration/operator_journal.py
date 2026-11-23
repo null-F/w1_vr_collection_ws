@@ -42,7 +42,8 @@ def begin_episode():
         return {'path': str(path), 'offset': file.tell(), 'initial': {
             'wall_ns': time.time_ns(), 'glove_phase': glove.get('phase', 'unavailable'),
             'glove_stage': glove.get('stage'), 'glove_session': glove.get('session'),
-            'pedal_connected': bool(pedal.get('connected')), 'pedal_held': bool(pedal.get('press')),
+            'pedal_connected': bool(pedal.get('connected')), 'pedal_held': bool(pedal.get('held', pedal.get('press'))),
+            'follow_requested': bool(pedal.get('press')),
             'following': bool(pedal.get('press') and vr.get('press') == pedal['press']
                               and vr.get('session') == state.ready_session() and vr.get('session'))}}
 

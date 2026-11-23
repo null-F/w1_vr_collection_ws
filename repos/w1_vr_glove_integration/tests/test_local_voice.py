@@ -112,7 +112,7 @@ def test_check_neither_executes_nor_opens_audio(bank, monkeypatch):
 def test_packaged_bank_has_all_real_prompts_and_nonzero_audio():
     # Executables are deliberately inert labels: static validation must not run them.
     player = voice.LocalPlayer(executable='unused-paplay', probe_executable='unused-pactl')
-    assert player.check()['prompts'] == 22
+    assert player.check()['prompts'] == 24
     from linkerbot_ffg_ros.calibration.poses import POSES
     for pose in POSES:
         assert '请双手' + pose.instruction + '，并保持。' in player.by_text

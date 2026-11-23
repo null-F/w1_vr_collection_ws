@@ -149,6 +149,18 @@
         "first_frame": 49440,
         "end_frame": 105408
       }
+    },
+    "follow_on": {
+      "text": "跟随已开启。",
+      "file": "follow_on.wav",
+      "sha256": "992681d42aee5c0c267c0486f69b05bd7500b5b75b074d1bbd4c52ee0c843c5c",
+      "duration_seconds": 1.92
+    },
+    "follow_off": {
+      "text": "跟随已关闭。",
+      "file": "follow_off.wav",
+      "sha256": "46bbbe94ac3c12969381604f0b5b807442e57b7afd3011f141e3a0aaec5f888f",
+      "duration_seconds": 1.872
     }
   }
 }

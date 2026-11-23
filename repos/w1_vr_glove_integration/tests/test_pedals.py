@@ -32,8 +32,40 @@ def test_physical_keys_bounce_repeat_and_hotplug():
         for value in (1,1,2,0,1,0):
             keys.event(key, value)
     assert keys.press == press and actions == ['glove','record']
-    keys.event(46, 0)
+    keys.event(46, 0)  # The firmware releases after about 20 ms.
+    assert keys.press == press
+    keys.event(46, 2)
+    assert keys.press == press
+    keys.event(46, 1)
     assert keys.press is None
+    keys.event(46, 0)
+    keys.event(46, 1)  # Contact bounce cannot re-enable.
+    assert keys.press is None
+
+
+def test_toggle_drops_lost_ack_and_pending_request(monkeypatch):
+    now = [5.0]
+    ack = {}
+    monkeypatch.setattr(pedals.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(pedals, 'fresh', lambda _: ack)
+    keys = pedals.Keys(state.settings(), [], lambda _: None)
+    def tap():
+        keys.event(46, 1)
+        keys.event(46, 0)
+    tap()
+    now[0] += state.TTL + .01
+    keys.reconcile()
+    assert keys.press is None
+    tap()
+    ack['press'] = keys.press
+    keys.reconcile()
+    assert keys.confirmed
+    ack.clear()
+    keys.reconcile()
+    assert keys.press is None
+    now[0] += 1
+    tap()
+    assert keys.press and not keys.confirmed
 
 
 @dataclass

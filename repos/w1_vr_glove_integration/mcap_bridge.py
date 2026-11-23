@@ -199,7 +199,7 @@ def bind_pose_lifecycle(controller):
     gate = None
     if bridge.single:
         from pedal_pose import PoseGate
-        gate = PoseGate(pose)
+        gate = PoseGate(pose, bridge.voice)
         pose.handle_pose = gate.handle
     disconnected_original=pose._abort_recording_for_disconnected_client
     async def disconnected(ws,client_addr):
