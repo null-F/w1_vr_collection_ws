@@ -1,0 +1,15 @@
+[Unit]
+Description=LinkerHand W1 chassis cameras, lidars and point cloud processing
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=dexforce
+WorkingDirectory=/home/dexforce/linkerhand
+ExecStart=/bin/bash /home/dexforce/linkerhand/repos/w1_mcap_collection/sensors.sh serve
+KillMode=mixed
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

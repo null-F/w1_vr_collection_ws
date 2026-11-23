@@ -146,3 +146,34 @@ MCAP 全量读回和进程收尾检查；同时检查 `coverage_status` / `missi
 cd /home/dexforce/linkerhand
 runtime/venvs/mcap-collection/bin/python repos/w1_mcap_collection/audit_streams.py /home/dexforce/collection_data/vr_glove/raw/episode_000000
 ```
+
+## 底盘传感器启动集成
+
+在 PC1 使用厂家节点生成采集器订阅的数据。四组原始启动命令如下：
+
+```bash
+source /home/dexforce/.dex_env.sh
+ros2 launch dexe_sensors_launch orbbec_nodes.launch.py
+ros2 launch lidar_sensor dual_udp_lidar.launch
+ros2 launch dexe_sensor_process front_p2c.launch.py
+ros2 launch dexe_sensor_process rear_p2c.launch.py
+```
+
+每条命令占用一个终端。相机组发布 RGB、深度和 CameraInfo，雷达组发布两路实体扫描，两个 p2c 组分别从深度生成三维原始点云。以上四组可由本工程的 sensors.sh serve 统一托管。
+
+安装服务后，启动 MCAP 服务会同时请求启动传感器服务。停止一段录制只关闭该段数据文件，传感器继续运行。开始录制前通过 check 核对十路都在接收；返回 0 表示测试窗口内每路至少收到一条，平均频率和最大间隔供现场判断。采集器仍允许缺流，并在 episode 中报告。
+
+```bash
+cd /home/dexforce/linkerhand
+sudo systemctl link "$PWD/repos/w1_vr_glove_integration/linkerhand-w1-sensors.service"
+sudo systemctl daemon-reload
+sudo systemctl start linkerhand-w1-sensors.service
+bash repos/w1_mcap_collection/sensors.sh check --seconds 30
+journalctl -u linkerhand-w1-sensors.service -n 60 --no-pager
+```
+
+设置开机启动时执行 sudo systemctl enable linkerhand-w1-sensors.service linkerhand-w1-mcap.service。重启后再次运行 check 验证。首次从旧部署升级时，先保存活动录制，安装服务并 daemon-reload，再按需启动服务。
+
+管理器先检查厂家同名节点，完整运行的一组会直接复用，存在部分相机节点时拒绝新增启动，避免重复打开设备。外部复用的进程由原服务管理，停止本服务只回收它自己启动的进程。启动后应持续保持同一运行模式；切换厂家自动/遥操模式前协调传感器服务，避免另一套启动脚本重复拉起节点。
+
+现场曾出现 USB 控制器带宽不足。重新枚举 USB 是针对已确认设备的现场恢复操作，服务正常启动不自动执行。当前四组独立传感器服务若仍在运行，首次启动管理器会复用它们；需要统一移交时，在空闲状态停止旧的四组 w1-capture-* 用户服务，随后重新启动本服务，再运行 check。
