@@ -3,9 +3,11 @@ import asyncio
 from dataclasses import replace
 import math
 import time
+import uuid
 
 import operator_state as signals
 from operator_journal import event
+from controller_offsets import ControllerOffsets
 
 
 def valid_pose(msg):
@@ -48,6 +50,7 @@ class ReleaseSocket:
 
 class PoseGate:
     def __init__(self, pose, voice=None):
+        self.offsets = ControllerOffsets()
         self.voice = voice
         self.pose = pose
         self.original = pose.handle_pose
@@ -57,6 +60,9 @@ class PoseGate:
         self.started_wall_ns = None
         self.watch = None
         self.reported = None
+        self.ready_return = None
+        self.last_preview = 0.0
+        self.preview_stream = uuid.uuid4().hex
 
     def permitted(self):
         p = self.pose
@@ -94,11 +100,33 @@ class PoseGate:
         async with self.lock:
             if time.monotonic() - received >= signals.TTL:
                 return
+            if self.ready_return and self.ready_return.active and self.ws is not ws:
+                return
             if self.ws is not ws and self.ws is not None and received - self.last_frame < signals.TTL:
                 return
             if self.ws is not ws or received - self.last_frame >= signals.TTL:
                 await self.release()
+            if self.ws is not ws:
+                self.preview_stream = uuid.uuid4().hex
             self.ws, self.last_frame = ws, received
+            # Optional raw telemetry for a read-only tuning UI; never changes the pose.
+            if received - self.last_preview >= 0.05 and valid_pose(msg):
+                self.last_preview = received
+                try:
+                    signals.publish('controller_preview.json', stream_id=self.preview_stream, poses=dict(
+                        head=msg.head, left_controller=msg.left_controller,
+                        right_controller=msg.right_controller))
+                except OSError:
+                    pass  # A preview file failure must not interrupt teleop.
+            if self.ready_return and self.ready_return.active:
+                # Keep tracking watchdog current without allowing VR to publish motion.
+                if not valid_pose(msg):
+                    self.ready_return.cancelled = True
+                return
+            if not valid_pose(msg):
+                await self.release()
+                return
+            msg = self.offsets.apply(msg)
             if not valid_pose(msg):
                 await self.release()
                 return
@@ -154,10 +182,14 @@ class PoseGate:
     async def disconnect(self, ws):
         async with self.lock:
             if self.ws is ws:
+                if self.ready_return:
+                    self.ready_return.cancelled = True
                 await self.release()
                 self.ws = self.frame = None
 
     async def close(self):
+        if self.ready_return:
+            await self.ready_return.close()
         if self.watch:
             self.watch.cancel()
         await self.disconnect(self.ws)

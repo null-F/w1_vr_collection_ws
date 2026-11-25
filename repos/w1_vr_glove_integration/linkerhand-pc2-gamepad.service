@@ -1,0 +1,17 @@
+[Unit]
+Description=LinkerHand PC2 F710 input and controller (USB reconnect)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=dexforce
+ExecStart=/bin/bash /home/dexforce/linkerhand/repos/w1_vr_glove_integration/run_pc2_gamepad.sh
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=8
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target

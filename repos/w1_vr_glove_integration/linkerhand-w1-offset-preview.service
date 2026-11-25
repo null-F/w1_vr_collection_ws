@@ -1,0 +1,15 @@
+[Unit]
+Description=W1 controller offset preview (no robot motion)
+After=network.target
+
+[Service]
+Type=simple
+User=dexforce
+WorkingDirectory=/home/dexforce/linkerhand
+ExecStart=/usr/bin/python3 /home/dexforce/linkerhand/repos/w1_vr_glove_integration/offset_preview.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

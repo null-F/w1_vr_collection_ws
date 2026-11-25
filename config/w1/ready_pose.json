@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "name": "ready",
+  "saved_at_client": "2026-11-24T18:39:52.457802+08:00",
+  "description": "用户指定的实机 ready 目标；单人模式长按 Y 恢复身体与双手，启动不自动运动。",
+  "body": {
+    "source_topic": "/feedback/joint",
+    "position_unit": "rad",
+    "source_stamp": {
+      "sec": 1789592180,
+      "nanosec": 837329584
+    },
+    "joint_positions": {
+      "ANKLE": 0.7099574676182286,
+      "KNEE": -1.2900179214872975,
+      "BUTTOCK": 0.5799765642947313,
+      "WAIST": -0.05213137833830109,
+      "NECK1": 0.09297361681575628,
+      "NECK2": -0.0258020362212327,
+      "LEFT_J1": -0.0263533105668791,
+      "LEFT_J2": -1.3639845576031582,
+      "LEFT_J3": -0.0113969978849941,
+      "LEFT_J4": -0.06099970476826495,
+      "LEFT_J5": -0.06221011148370596,
+      "LEFT_J6": -0.5253045302764946,
+      "LEFT_J7": -0.17791780294492365,
+      "RIGHT_J1": 0.026485137040838023,
+      "RIGHT_J2": 1.3491480871703267,
+      "RIGHT_J3": -0.04699014585390312,
+      "RIGHT_J4": 0.17101488939943826,
+      "RIGHT_J5": 0.06721951749414501,
+      "RIGHT_J6": 0.5338492826340139,
+      "RIGHT_J7": -0.11139337049528933
+    },
+    "velocity_rad_s": {
+      "ANKLE": 0.0,
+      "KNEE": 2.3968449810713143e-05,
+      "BUTTOCK": 0.0,
+      "WAIST": 0.0,
+      "NECK1": 0.0,
+      "NECK2": 0.0004673847713089063,
+      "LEFT_J1": 0.0016058861373177806,
+      "LEFT_J2": -0.0005512743456464023,
+      "LEFT_J3": 0.0,
+      "LEFT_J4": 0.003858920419524816,
+      "LEFT_J5": -0.0006591323697946115,
+      "LEFT_J6": 0.003055977350865926,
+      "LEFT_J7": -0.0027563717282320117,
+      "RIGHT_J1": -0.00019174759848570515,
+      "RIGHT_J2": -8.3889574337496e-05,
+      "RIGHT_J3": 3.5952674716069715e-05,
+      "RIGHT_J4": 0.0,
+      "RIGHT_J5": -0.0015219965629802846,
+      "RIGHT_J6": 0.0014381069886427885,
+      "RIGHT_J7": -4.7936899621426287e-05
+    },
+    "effort_native": {
+      "ANKLE": -15.659999999999998,
+      "KNEE": 24.273,
+      "BUTTOCK": -2.5229999999999997,
+      "WAIST": 0.7829999999999999,
+      "NECK1": 0.08,
+      "NECK2": 0.0,
+      "LEFT_J1": -1.395,
+      "LEFT_J2": 3.875,
+      "LEFT_J3": -0.124,
+      "LEFT_J4": -1.054,
+      "LEFT_J5": -0.07,
+      "LEFT_J6": -0.25,
+      "LEFT_J7": 0.35000000000000003,
+      "RIGHT_J1": 1.271,
+      "RIGHT_J2": -3.7199999999999998,
+      "RIGHT_J3": 0.155,
+      "RIGHT_J4": 1.488,
+      "RIGHT_J5": 0.25,
+      "RIGHT_J6": -0.02,
+      "RIGHT_J7": 0.0
+    }
+  },
+  "hands": {
+    "left": {
+      "source_topic": "/feedback/ee/left",
+      "ee_name": "Linker_L6",
+      "source_stamp": {
+        "sec": 1789592180,
+        "nanosec": 841997557
+      },
+      "position_unit": "dexe_l6_0_100",
+      "status": 0,
+      "joint_positions": {
+        "T_MCP": 0.0,
+        "T_CMC_YAW": 0.0,
+        "IF_MCP_PITCH": 0.4000000059604645,
+        "MF_MCP_PITCH": 0.4000000059604645,
+        "RF_MCP_PITCH": 0.4000000059604645,
+        "LF_MCP_PITCH": 0.4000000059604645
+      },
+      "joint_states": [
+        {
+          "name": "T_MCP",
+          "position": 0.0,
+          "velocity": 100.0,
+          "current": 15.699999809265137,
+          "temperature": 31.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "T_CMC_YAW",
+          "position": 0.0,
+          "velocity": 100.0,
+          "current": 11.0,
+          "temperature": 35.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "IF_MCP_PITCH",
+          "position": 0.4000000059604645,
+          "velocity": 100.0,
+          "current": 0.800000011920929,
+          "temperature": 35.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "MF_MCP_PITCH",
+          "position": 0.4000000059604645,
+          "velocity": 100.0,
+          "current": 0.4000000059604645,
+          "temperature": 36.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "RF_MCP_PITCH",
+          "position": 0.4000000059604645,
+          "velocity": 100.0,
+          "current": 0.0,
+          "temperature": 36.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "LF_MCP_PITCH",
+          "position": 0.4000000059604645,
+          "velocity": 100.0,
+          "current": 0.800000011920929,
+          "temperature": 35.0,
+          "status": 0,
+          "error_code": 0
+        }
+      ]
+    },
+    "right": {
+      "source_topic": "/feedback/ee/right",
+      "ee_name": "Linker_L6",
+      "source_stamp": {
+        "sec": 1789592180,
+        "nanosec": 818171323
+      },
+      "position_unit": "dexe_l6_0_100",
+      "status": 0,
+      "joint_positions": {
+        "T_MCP": 99.5999984741211,
+        "T_CMC_YAW": 99.19999694824219,
+        "IF_MCP_PITCH": 22.700000762939453,
+        "MF_MCP_PITCH": 25.899999618530273,
+        "RF_MCP_PITCH": 0.4000000059604645,
+        "LF_MCP_PITCH": 0.0
+      },
+      "joint_states": [
+        {
+          "name": "T_MCP",
+          "position": 99.5999984741211,
+          "velocity": 100.0,
+          "current": 12.5,
+          "temperature": 35.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "T_CMC_YAW",
+          "position": 99.19999694824219,
+          "velocity": 100.0,
+          "current": 24.299999237060547,
+          "temperature": 43.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "IF_MCP_PITCH",
+          "position": 22.700000762939453,
+          "velocity": 100.0,
+          "current": 1.2000000476837158,
+          "temperature": 36.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "MF_MCP_PITCH",
+          "position": 25.899999618530273,
+          "velocity": 100.0,
+          "current": 0.800000011920929,
+          "temperature": 36.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "RF_MCP_PITCH",
+          "position": 0.4000000059604645,
+          "velocity": 100.0,
+          "current": 0.0,
+          "temperature": 34.0,
+          "status": 0,
+          "error_code": 0
+        },
+        {
+          "name": "LF_MCP_PITCH",
+          "position": 0.0,
+          "velocity": 100.0,
+          "current": 1.2000000476837158,
+          "temperature": 34.0,
+          "status": 0,
+          "error_code": 0
+        }
+      ]
+    }
+  },
+  "return_control": {
+    "enabled": true,
+    "button": "left.y.hold",
+    "reason": "Replace vendor return_to_position target with saved ready posture",
+    "body_interpolation_duration_s": 6.0,
+    "require_fresh_feedback": true,
+    "require_follow_off": true,
+    "require_new_follow_press_after_return": true
+  },
+  "capture_notes": [
+    "Source robot wall clock is inaccurate; saved_at_client uses local Asia/Shanghai clock.",
+    "Hand position uses DexForce Linker_L6 0..100 scale, not radians or original LinkerHand 0..255 motor targets.",
+    "This snapshot is a target posture, not a collision-free return trajectory."
+  ]
+}

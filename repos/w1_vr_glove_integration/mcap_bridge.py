@@ -201,6 +201,14 @@ def bind_pose_lifecycle(controller):
         from pedal_pose import PoseGate
         gate = PoseGate(pose, bridge.voice)
         pose.handle_pose = gate.handle
+        # RecordingManager is constructed before joint_controller/auto_return_service.
+        # Bind only after the complete PoseServer and IK have been initialized.
+        run_original = pose.run
+        async def run():
+            from ready_return import ReadyReturn
+            gate.ready_return = ReadyReturn(gate)
+            return await run_original()
+        pose.run = run
     disconnected_original=pose._abort_recording_for_disconnected_client
     async def disconnected(ws,client_addr):
         if gate:await gate.disconnect(ws)

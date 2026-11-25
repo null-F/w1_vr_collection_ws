@@ -55,3 +55,17 @@ curl -s http://127.0.0.1:18770/status
 - `/run/linkerhand-w1-pedals/pedal.json` 记录输入心跳，`vr.json` 记录厂家遥操使能回执。`hands.json` 来自本次手套会话的双手输入。心跳有效期为 250 ms，看护循环间隔为 40 ms。两者是软件参数，调度、网络、驱动和机构响应会影响实测时延。
 - 单人模式的 `episode.json` 在右踏板开录时标记 `source=pedal`。`operator_events.jsonl` 保存开始状态、手套阶段、踏板连接与中键电平、厂家跟随使能变化及结束时间。事件使用 PC1 观察到的墙钟纳秒。手套阶段、跟随使能与是否正在录制是三个独立状态。
 - 全量验收覆盖一段包含转场和二次标定的录制。点踩中踏板退出跟随、关闭 VR 和左踏板停止手套之后，右踏板应仍能保存同一段。终端已开录时右踏板应收到归属冲突。回放和缺流检查见采集工程说明。
+
+## 手背手柄安装补偿
+
+单人模式在读取原始手柄位姿后、厂家坐标变换和 IK 之前，应用 config/w1/controller_offsets.json。左右分别配置 translation_m（米）和 rotation_xyz_deg（度，固定轴 XYZ 欧拉角，与 SciPy 小写 xyz 一致）。计算使用 T_corrected = T_controller × T_offset，平移在当前手柄局部坐标系中表达，随手柄朝向旋转。
+
+当前右手补偿来自 2026-11-24 掌心/手背两组 WebXR 采样，采用 inv(T_back) × T_palm：translation_m=[-0.1133458832, 0.0684921509, -0.0186485947]，rotation_xyz_deg=[35.3649461, -5.6552765, -21.6712305]。左手暂按左右对称安装镜像，以 M=diag(-1,1,1) 计算 t_left=M×t_right、R_left=M×R_right×M；在固定轴 xyz 欧拉角下对应 [rx,-ry,-rz]。左手尚未独立标定，需实机确认对称安装和手腕静止假设。机器人厂家配置 teleop_config.yaml 的 teleop_spatial_mode 恢复为 absolute；此配置位于机器人厂家工程中，补偿在绝对/增量模式下均先于厂家映射应用。原始追踪位姿和补偿后的位姿都会经过有效性检查。既有厂家映射和 IK 接收补偿后的手柄目标。
+
+配置在 VR 进程初始化时读取，修改后需在退出跟随、保存录制后重启 dexe-tele.service，再进入网页测试。enabled=false 可关闭补偿。双人模式沿用原握持入口。启动日志中的 LINKERHAND_CONTROLLER_OFFSETS 输出本次使用的配置。
+
+## Ready 回位
+
+单人模式长按左手 Y 约 2 秒，恢复 config/w1/ready_pose.json 的身体及双手位置；回位期间暂停实时跟随，结束后重新踩 C 开始下一轮。B 原功能保持不变，E 的 MCAP 录制不自动停止。操作条件与故障处理见 READY_POSE.md。
+
+手背安装补偿的可视化调参入口见 [OFFSET_PREVIEW.md](OFFSET_PREVIEW.md)。页面只预览和保存待用参数，不热更新、不使能机器人。
