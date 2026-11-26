@@ -19,6 +19,7 @@ from rclpy.qos import qos_profile_sensor_data
 from std_srvs.srv import Trigger
 from engine import Engine
 from device_snapshot import DeviceSnapshot, HeadCalibration
+from capture_settings import select_topics, mounting_snapshot, camera_parameters
 from storage import atomic_json, process_identity, read_json
 
 HERE=Path(__file__).resolve().parent
@@ -48,6 +49,7 @@ class Recorder(Node):
         self.calibration = HeadCalibration()
         self.engine=Engine(RUNTIME, self.calibration)
         self.config=yaml.safe_load((HERE/'topics.yaml').read_text())
+        _, self.calibration.camera_topics = select_topics(self.config)
         self.device_snapshot=DeviceSnapshot(RUNTIME/'device_snapshot.json',capture_device_snapshot)
         self.get_logger().info('Device snapshot: '+json.dumps(self.device_snapshot.describe()))
         if self.engine.active:
@@ -70,6 +72,14 @@ class Recorder(Node):
         self.cal_node = Node('w1_head_calibration_monitor', use_global_arguments=False)
         self.cal_node.create_subscription(String, '/camera/kfc_calib_data',
                                           lambda m: self.calibration.observe(m.data), 10)
+        from sensor_msgs.msg import CameraInfo
+        for topic in self.calibration.camera_topics:
+            def observe_camera(message, topic=topic):
+                try:
+                    self.calibration.observe_camera_info(topic, camera_parameters(message))
+                except (ValueError, TypeError) as exc:
+                    self.get_logger().warning('Invalid camera parameters '+topic+': '+str(exc))
+            self.cal_node.create_subscription(CameraInfo, topic, observe_camera, qos_profile_sensor_data)
         self.cal_node.create_timer(.5, self.calibration.tick)
         self.cal_executor = SingleThreadedExecutor()
         self.cal_executor.add_node(self.cal_node)
@@ -131,14 +141,19 @@ class Recorder(Node):
         except Exception as exc:self.get_logger().error(f'Recorder monitoring failed: {exc}')
 
     def start(self, source='manual', task=None, token=None):
-        topics=sum([self.config[k] for k in ['continuous','command_or_event','static']],[])
-        if self.get_parameter('collect_auxiliary').value:topics+=self.config['optional']
+        topics, metadata_topics = select_topics(self.config, self.get_parameter('collect_auxiliary').value)
         warnings=[]
         if self.get_parameter('collect_depth').value:warnings.append('collect_depth is legacy: front/rear depth are included by default')
         for t in topics:
             if not self.get_publishers_info_by_topic(t):warnings.append(f'{t}: no publisher at start')
         snap,snapshot_warnings=self.device_snapshot.for_episode()
         warnings.extend(snapshot_warnings)
+        mounting, mounting_warnings = mounting_snapshot(HERE.parents[1]/'config/w1/controller_offsets.json',
+                            Path('/run/linkerhand-w1-pedals/controller_offsets.json'))
+        warnings.extend(mounting_warnings)
+        snap['controller_mounting_extrinsics'] = mounting
+        snap['capture_selection'] = dict(recorded_topics=topics, metadata_only_topics=metadata_topics,
+                                        disabled_topics=list(self.config.get('disabled', [])))
         snap.update(device={'id':'w1-pc1','type':'Dexforce W1'},
                     hand={'model':'Linker_L6','dof':6,'position_unit':'normalized_0_100',
                           'action_topics':['/linkerhand/w1/ee/left/command','/linkerhand/w1/ee/right/command'],

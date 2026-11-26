@@ -4,6 +4,8 @@ continuous:
   - /feedback/ee/left
   - /feedback/ee/right
   - /feedback/odom
+  - /imu/chassis
+  - /imu/chassis/refined
   - /feedback/omni_chassis_motor
   - /camera/kfc_compressed
   - /orbbec/front/rgb
@@ -34,8 +36,16 @@ static:
 optional:
   - /camera/kfc_status
   - /feedback/battery_status
-  - /imu/chassis
-  - /imu/chassis/refined
   - /diagnostics
   - /diagnostics_agg
   - /rosout
+
+# These CameraInfo parameters are deduplicated in device_info.json, not streamed into MCAP.
+metadata_only:
+  - /orbbec/front/camera_info
+  - /orbbec/rear/camera_info
+
+# Remove an entry from this list to enable its recording; keep the topic in its group above.
+disabled:
+  - /orbbec/front/pointcloud2_raw
+  - /orbbec/rear/pointcloud2_raw

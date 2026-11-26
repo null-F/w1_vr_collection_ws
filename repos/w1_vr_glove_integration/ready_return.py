@@ -204,6 +204,37 @@ class ReadyReturn:
         self.pose.state.frame_id += 1
         self.pose.last_sent_cmd = dict(zip(self.names, row[:len(self.names)]))
 
+    def tracking_error(self, actual, expected, limits):
+        errors = abs(actual - expected)
+        index = int(np.argmax(errors / limits))
+        labels = self.names + [side + '/' + name for side in ('left', 'right') for name in HAND_NAMES]
+        unit = 'rad' if index < len(self.names) else 'L6_0_100'
+        return f'{labels[index]}: error={errors[index]:.4f} {unit}, limit={limits[index]:.4f}'
+
+    async def wait_for_tracking(self, previous, period, budget):
+        """Hold the last safe command while lagging, without advancing trajectory time."""
+        soft = np.array([0.12]*len(self.names) + [8.0]*12)
+        hard = np.array([0.35]*len(self.names) + [25.0]*12)
+        started = time.monotonic()
+        waiting = False
+        while True:
+            actual = self.guard()
+            error = abs(actual - previous)
+            if np.any(error > hard):
+                raise ValueError('return tracking error too large: ' + self.tracking_error(actual, previous, hard))
+            self.check_body(actual[:len(self.names)])
+            if np.all(error <= soft):
+                return max(0.0, time.monotonic() - started) if waiting else 0.0
+            if not waiting:
+                print('LINKERHAND_READY_RETURN waiting for tracking: ' +
+                      self.tracking_error(actual, previous, soft), flush=True)
+                waiting = True
+            if time.monotonic() - started >= min(5.0, budget):
+                raise ValueError('return tracking did not recover: ' + self.tracking_error(actual, previous, soft))
+            self.check_body(previous[:len(self.names)])
+            self.publish(previous)
+            await asyncio.sleep(period)
+
     async def run(self, target):
         success = False
         try:
@@ -220,13 +251,10 @@ class ReadyReturn:
             tolerances = np.array([0.035]*len(self.names) + [3.0]*12)
             if np.any(abs(self.guard() - start) > tolerances):
                 raise ValueError('robot moved during return preflight; retry')
-            following_limits = np.array([0.35]*len(self.names) + [25.0]*12)
             previous = start
+            waiting_budget = 30.0
             for row in rows:
-                actual = self.guard()
-                if np.any(abs(actual - previous) > following_limits):
-                    raise ValueError('return tracking error too large')
-                self.check_body(actual[:len(self.names)])
+                waiting_budget -= await self.wait_for_tracking(previous, period, waiting_budget)
                 self.check_body(row[:len(self.names)])
                 self.publish(row)
                 previous = row
@@ -263,7 +291,7 @@ class ReadyReturn:
             self.active = False
             self.task = None
         if success:
-            await self.status('completed', '已恢复 Ready 姿态，请重新踩 C 开启跟随')
+            await self.status('completed', '已恢复 Ready 姿态，请重新踩跟随踏板 开启跟随')
 
     async def close(self):
         self.cancelled = True

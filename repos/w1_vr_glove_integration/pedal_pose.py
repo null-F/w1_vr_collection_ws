@@ -2,6 +2,8 @@
 import asyncio
 from dataclasses import replace
 import math
+import os
+from pathlib import Path
 import time
 import uuid
 
@@ -51,6 +53,12 @@ class ReleaseSocket:
 class PoseGate:
     def __init__(self, pose, voice=None):
         self.offsets = ControllerOffsets()
+        try:
+            signals.publish('controller_offsets.json', config=self.offsets.config,
+                            pid=os.getpid(), pid_start=signals.process_start(os.getpid()),
+                            boot_id=Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+        except OSError as exc:
+            print('Controller offset runtime snapshot unavailable: '+str(exc), flush=True)
         self.voice = voice
         self.pose = pose
         self.original = pose.handle_pose

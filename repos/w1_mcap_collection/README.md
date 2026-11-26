@@ -47,7 +47,7 @@ bash /home/dexforce/linkerhand/repos/w1_mcap_collection/record.sh cancel
 
 ## 数据范围
 
-默认 MCAP 记录 30 路。完整分组见 [topics.yaml](topics.yaml)。其中十路是前后两台 Orbbec 各自的 RGB、深度、CameraInfo、原始 PointCloud2，加上前后两路实体 LaserScan。保留原始 ROS 消息供后续导出。
+默认 MCAP 记录 28 路（包含 `/imu/chassis` 与 `/imu/chassis/refined`）。完整分组见 [topics.yaml](topics.yaml)：原 30 路中，两路 CameraInfo 改为 device_info.json 去重元数据，两路原始 PointCloud2 默认不录。前后 RGB、深度及实体雷达继续记录。保留原始 ROS 消息供后续导出。
 
 - 手action只记录 `/linkerhand/w1/ee/{left,right}/command`，位置0..100。手state来自 `/feedback/ee/{left,right}`。
 - 不录制手套21通道原始输入、motor_cmd中间映射、厂家VR手指命令。
@@ -177,3 +177,36 @@ journalctl -u linkerhand-w1-sensors.service -n 60 --no-pager
 管理器先检查厂家同名节点，完整运行的一组会直接复用，存在部分相机节点时拒绝新增启动，避免重复打开设备。外部复用的进程由原服务管理，停止本服务只回收它自己启动的进程。启动后应持续保持同一运行模式；切换厂家自动/遥操模式前协调传感器服务，避免另一套启动脚本重复拉起节点。
 
 现场曾出现 USB 控制器带宽不足。重新枚举 USB 是针对已确认设备的现场恢复操作，服务正常启动不自动执行。当前四组独立传感器服务若仍在运行，首次启动管理器会复用它们；需要统一移交时，在空闲状态停止旧的四组 w1-capture-* 用户服务，随后重新启动本服务，再运行 check。
+
+## 采集开关与每段标定参数
+
+编辑 `topics.yaml`：`continuous`、`command_or_event`、`static` 为候选话题；`disabled` 内的话题不进入 MCAP；`metadata_only` 当前支持 CameraInfo，不进入 MCAP，保存到每段 device_info.json。修改后在没有录制时重启 linkerhand-w1-mcap.service 生效。修改名单不停止传感器驱动，也不停止点云计算节点。
+
+前后点云默认在 disabled 中，删除这两个条目或设 `disabled: []` 可恢复采集。recording_info 的 expected_topics/missing_topics 只按实际启用的 MCAP 清单计算，不会将主动关闭的点云误报为漏采。相机标定是否可用应查看 device_info 的元数据状态。
+
+CameraInfo 保存路径为 `camera_info[topic].versions[sha256].parameters`，包括图像尺寸、frame_id、D/K/R/P、畸变模型、binning 与 ROI。Header stamp 不参与去重，相同参数只保留一份；变更或断流用 history 记录，不逐帧写盘。新导出流程需从此处读取相机参数；旧包里的 CameraInfo 仍位于 MCAP。
+
+手柄外参保存在 `controller_mounting_extrinsics`：`configured` 为开录时配置文件快照，`effective` 为通过 VR 进程身份验证的已加载参数；包含文件 SHA256、米单位平移、固定轴 xyz 度旋转及右乘约定。`runtime_verified=false` 时不会冒充已确认的运行参数，effective 为 null，并记录警告。
+
+VR 每次加载 offsets 时写入 `/run/linkerhand-w1-pedals/controller_offsets.json`，包含 PID、启动时间和 boot ID。首次部署该增强后需在安全时重新加载 VR 服务，之后每段采集可验证实际加载值；仅改配置文件未重新加载时会同时保存文件值和运行值并标记不一致。既有 episode 不会被回写。
+
+### IMU 与 odom 开机启动
+
+PC1 使用 `linkerhand-w1-imu.service` 运行 `imu_watchdog.py`。脚本等待
+`/dev/ttyIMU`，复用已运行的厂家 `imu/talker`；若没有实例则启动厂家原始
+驱动，进程退出后每两秒检查重启。停止服务只结束自身启动的驱动。
+该服务不修改底盘 IMU 融合参数，也不重启底盘控制服务。
+
+安装（PC1，工程位于 `/home/dexforce/linkerhand`）：
+
+```bash
+sudo install -m 644 ~/linkerhand/repos/w1_vr_glove_integration/linkerhand-w1-imu.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now linkerhand-w1-imu.service
+systemctl status linkerhand-w1-imu.service
+```
+
+验证 `/imu/chassis` 与 `/feedback/odom` 必须实际收到消息，不能只检查话题名。
+厂家自动/建图/标定模式也可能启动 IMU；此脚本只会在自身启动前检查现有实例，
+无法阻止厂家脚本随后启动重复实例，切换这些模式时需统一驱动所有权。
+服务已启用不等于已完成断电冷启动验证；仍需在下次开机后复查两路消息。

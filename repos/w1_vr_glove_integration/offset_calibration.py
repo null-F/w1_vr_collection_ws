@@ -30,7 +30,7 @@ def sample(path, side, expected_stream=None, duration=2.0):
     start, stream = time.monotonic(), expected_stream
     while time.monotonic()-start < duration:
         if signals.fresh('vr.json').get('press') or signals.fresh('pedal.json').get('press'):
-            raise ValueError('请先关闭 C 踏板跟随，再进行标定')
+            raise ValueError('请先关闭跟随踏板控制，再进行标定')
         data = signals.read(path)
         stamp = data.get('monotonic')
         if type(stamp) not in (int, float) or not math.isfinite(stamp) or not 0 <= time.monotonic()-stamp < .25:

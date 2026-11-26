@@ -30,7 +30,9 @@ def stats(topics):
 
 def audit(episode):
     config = yaml.safe_load(Path(__file__).with_name('topics.yaml').read_text())
-    topics = [t for t in config['continuous'] if t.startswith(('/laser_scan/', '/orbbec/'))]
+    session_file = episode / 'episode.json'
+    chosen = json.loads(session_file.read_text()).get('topics', config['continuous']) if session_file.is_file() else config['continuous']
+    topics = [t for t in chosen if t.startswith(('/laser_scan/', '/orbbec/'))]
     totals = stats(topics)
     stages = []
     stage_file = episode / 'operator_events.jsonl'

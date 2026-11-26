@@ -33,6 +33,7 @@ class ControllerOffsets:
                 translation = vector(data['translation_m'], side + '.translation_m')
                 angles = vector(data['rotation_xyz_deg'], side + '.rotation_xyz_deg')
                 self.transforms[side] = (translation, Rotation.from_euler('xyz', angles, degrees=True))
+        self.config = config
         print('LINKERHAND_CONTROLLER_OFFSETS ' + json.dumps(config), flush=True)
 
     def apply(self, message):

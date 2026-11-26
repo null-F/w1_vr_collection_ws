@@ -125,6 +125,14 @@ class HeadCalibration:
         self.last_raw = None
         self.observed_ns = self.last_seen = 0
         self.dirty = False
+        self.camera_topics = []
+        self.camera_values = {}
+
+    def observe_camera_info(self, topic, parameters):
+        with self.lock:
+            self.camera_values[topic] = dict(parameters=copy.deepcopy(parameters), sha256=checksum(parameters),
+                                              observed_wall_ns=time.time_ns(), last_seen=time.monotonic())
+            self._update()
 
     @staticmethod
     def parse(raw):
@@ -179,6 +187,21 @@ class HeadCalibration:
     def _update(self, force=False):
         if self.metadata is None:
             return
+        for topic in self.camera_topics:
+            entry = self.metadata.setdefault('camera_info', {}).setdefault(topic,
+                dict(message_type='sensor_msgs/msg/CameraInfo', versions={}, history=[]))
+            current = self.camera_values.get(topic)
+            if current and time.monotonic() - current['last_seen'] > 3:
+                current = None
+            key = current['sha256'] if current else None
+            status = 'available' if current else 'missing'
+            previous = entry['history'][-1] if entry['history'] else {}
+            if (status, key) != (previous.get('status'), previous.get('sha256')):
+                if current:
+                    entry['versions'][key] = dict(sha256=key, parameters=current['parameters'])
+                entry['history'].append(dict(status=status, sha256=key, effective_wall_ns=time.time_ns(),
+                                             observed_wall_ns=current['observed_wall_ns'] if current else None))
+                self.dirty = True
         record = self.metadata['head_calibration']
         key = self.current['sha256'] if self.current else None
         state = (self.reason, key)

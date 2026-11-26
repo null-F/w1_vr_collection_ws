@@ -1,0 +1,16 @@
+[Unit]
+Description=LinkerHand W1 vendor IMU driver supervisor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=dexforce
+WorkingDirectory=/home/dexforce/linkerhand
+ExecStart=/bin/bash -c 'source /home/dexforce/.dex_env.sh && exec /usr/bin/python3 /home/dexforce/linkerhand/repos/w1_mcap_collection/imu_watchdog.py'
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target
