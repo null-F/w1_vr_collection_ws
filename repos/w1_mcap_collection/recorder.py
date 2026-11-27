@@ -50,6 +50,11 @@ class Recorder(Node):
         self.engine=Engine(RUNTIME, self.calibration)
         self.config=yaml.safe_load((HERE/'topics.yaml').read_text())
         _, self.calibration.camera_topics = select_topics(self.config)
+        self.calibration.d2c_topics = [
+            topic.removesuffix('/depth/camera_info') + '/depth_to_rgb_extrinsics'
+            for topic in self.calibration.camera_topics
+            if topic.startswith('/orbbec/') and topic.endswith('/depth/camera_info')
+        ]
         self.device_snapshot=DeviceSnapshot(RUNTIME/'device_snapshot.json',capture_device_snapshot)
         self.get_logger().info('Device snapshot: '+json.dumps(self.device_snapshot.describe()))
         if self.engine.active:
@@ -80,6 +85,13 @@ class Recorder(Node):
                 except (ValueError, TypeError) as exc:
                     self.get_logger().warning('Invalid camera parameters '+topic+': '+str(exc))
             self.cal_node.create_subscription(CameraInfo, topic, observe_camera, qos_profile_sensor_data)
+        for topic in self.calibration.d2c_topics:
+            def observe_d2c(message, topic=topic):
+                try:
+                    self.calibration.observe_d2c_extrinsics(topic, message.data)
+                except (ValueError, TypeError, OverflowError) as exc:
+                    self.get_logger().warning('Invalid D2C extrinsics '+topic+': '+str(exc))
+            self.cal_node.create_subscription(String, topic, observe_d2c, qos_profile_sensor_data)
         self.cal_node.create_timer(.5, self.calibration.tick)
         self.cal_executor = SingleThreadedExecutor()
         self.cal_executor.add_node(self.cal_node)

@@ -14,7 +14,7 @@
   history: keep_last
   depth: 1
 # PC1/PC2 publishers for these streams offer reliable, volatile QoS.
-/orbbec/front/rgb:
+/orbbec/front/rgb/compressed:
   reliability: reliable
   durability: volatile
   history: keep_last
@@ -29,12 +29,7 @@
   durability: volatile
   history: keep_last
   depth: 10
-/orbbec/front/pointcloud2_raw:
-  reliability: reliable
-  durability: volatile
-  history: keep_last
-  depth: 10
-/orbbec/rear/rgb:
+/orbbec/rear/rgb/compressed:
   reliability: reliable
   durability: volatile
   history: keep_last
@@ -49,11 +44,6 @@
   durability: volatile
   history: keep_last
   depth: 10
-/orbbec/rear/pointcloud2_raw:
-  reliability: reliable
-  durability: volatile
-  history: keep_last
-  depth: 10
 /laser_scan/front:
   reliability: reliable
   durability: volatile
@@ -64,3 +54,13 @@
   durability: volatile
   history: keep_last
   depth: 10
+/orbbec/front/depth/scale_mm_per_unit:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/orbbec/rear/depth/scale_mm_per_unit:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1

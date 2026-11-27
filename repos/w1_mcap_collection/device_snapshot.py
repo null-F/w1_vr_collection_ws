@@ -126,6 +126,7 @@ class HeadCalibration:
         self.observed_ns = self.last_seen = 0
         self.dirty = False
         self.camera_topics = []
+        self.d2c_topics = []
         self.camera_values = {}
 
     def observe_camera_info(self, topic, parameters):
@@ -133,6 +134,27 @@ class HeadCalibration:
             self.camera_values[topic] = dict(parameters=copy.deepcopy(parameters), sha256=checksum(parameters),
                                               observed_wall_ns=time.time_ns(), last_seen=time.monotonic())
             self._update()
+
+    def observe_d2c_extrinsics(self, topic, raw):
+        value = json.loads(raw)
+        if not isinstance(value, dict) or value.get('transform') != 'T_rgb_from_depth':
+            raise ValueError('Invalid depth-to-RGB transform direction')
+        for name, size in [('rotation_row_major', 9), ('translation_mm', 3)]:
+            vector = value.get(name)
+            if (not isinstance(vector, list) or len(vector) != size or
+                    not all(type(v) in (int, float) and math.isfinite(v) for v in vector)):
+                raise ValueError('Invalid depth-to-RGB ' + name)
+        r = value['rotation_row_major']
+        for i in range(3):
+            for j in range(3):
+                dot = sum(r[3*i+k] * r[3*j+k] for k in range(3))
+                if abs(dot - int(i == j)) > 1e-3:
+                    raise ValueError('Depth-to-RGB rotation is not orthonormal')
+        determinant = (r[0]*(r[4]*r[8]-r[5]*r[7]) - r[1]*(r[3]*r[8]-r[5]*r[6])
+                       + r[2]*(r[3]*r[7]-r[4]*r[6]))
+        if abs(determinant - 1) > 1e-3:
+            raise ValueError('Invalid depth-to-RGB rotation determinant')
+        self.observe_camera_info(topic, value)
 
     @staticmethod
     def parse(raw):
@@ -187,21 +209,26 @@ class HeadCalibration:
     def _update(self, force=False):
         if self.metadata is None:
             return
-        for topic in self.camera_topics:
-            entry = self.metadata.setdefault('camera_info', {}).setdefault(topic,
-                dict(message_type='sensor_msgs/msg/CameraInfo', versions={}, history=[]))
-            current = self.camera_values.get(topic)
-            if current and time.monotonic() - current['last_seen'] > 3:
-                current = None
-            key = current['sha256'] if current else None
-            status = 'available' if current else 'missing'
-            previous = entry['history'][-1] if entry['history'] else {}
-            if (status, key) != (previous.get('status'), previous.get('sha256')):
-                if current:
-                    entry['versions'][key] = dict(sha256=key, parameters=current['parameters'])
-                entry['history'].append(dict(status=status, sha256=key, effective_wall_ns=time.time_ns(),
-                                             observed_wall_ns=current['observed_wall_ns'] if current else None))
-                self.dirty = True
+        groups = (
+            ('camera_info', 'sensor_msgs/msg/CameraInfo', self.camera_topics),
+            ('orbbec_depth_to_rgb_extrinsics', 'std_msgs/msg/String', self.d2c_topics),
+        )
+        for group, message_type, topics in groups:
+            for topic in topics:
+                entry = self.metadata.setdefault(group, {}).setdefault(topic,
+                    dict(message_type=message_type, versions={}, history=[]))
+                current = self.camera_values.get(topic)
+                if current and time.monotonic() - current['last_seen'] > 3:
+                    current = None
+                key = current['sha256'] if current else None
+                status = 'available' if current else 'missing'
+                previous = entry['history'][-1] if entry['history'] else {}
+                if (status, key) != (previous.get('status'), previous.get('sha256')):
+                    if current:
+                        entry['versions'][key] = dict(sha256=key, parameters=current['parameters'])
+                    entry['history'].append(dict(status=status, sha256=key, effective_wall_ns=time.time_ns(),
+                                                 observed_wall_ns=current['observed_wall_ns'] if current else None))
+                    self.dirty = True
         record = self.metadata['head_calibration']
         key = self.current['sha256'] if self.current else None
         state = (self.reason, key)

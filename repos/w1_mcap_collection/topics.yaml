@@ -8,14 +8,14 @@ continuous:
   - /imu/chassis/refined
   - /feedback/omni_chassis_motor
   - /camera/kfc_compressed
-  - /orbbec/front/rgb
+  - /orbbec/front/rgb/compressed
   - /orbbec/front/depth
   - /orbbec/front/camera_info
-  - /orbbec/front/pointcloud2_raw
-  - /orbbec/rear/rgb
+  - /orbbec/front/depth/camera_info
+  - /orbbec/rear/rgb/compressed
   - /orbbec/rear/depth
   - /orbbec/rear/camera_info
-  - /orbbec/rear/pointcloud2_raw
+  - /orbbec/rear/depth/camera_info
   - /laser_scan/front
   - /laser_scan/rear
   - /feedback/robot_status
@@ -33,6 +33,8 @@ command_or_event:
 static:
   - /tf_static
   - /robot_description
+  - /orbbec/front/depth/scale_mm_per_unit
+  - /orbbec/rear/depth/scale_mm_per_unit
 optional:
   - /camera/kfc_status
   - /feedback/battery_status
@@ -43,9 +45,6 @@ optional:
 # These CameraInfo parameters are deduplicated in device_info.json, not streamed into MCAP.
 metadata_only:
   - /orbbec/front/camera_info
+  - /orbbec/front/depth/camera_info
   - /orbbec/rear/camera_info
-
-# Remove an entry from this list to enable its recording; keep the topic in its group above.
-disabled:
-  - /orbbec/front/pointcloud2_raw
-  - /orbbec/rear/pointcloud2_raw
+  - /orbbec/rear/depth/camera_info

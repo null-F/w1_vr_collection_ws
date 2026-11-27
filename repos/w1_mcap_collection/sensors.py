@@ -20,8 +20,6 @@ GROUPS = [
     ('dexe_sensors_launch', 'orbbec_nodes.launch.py',
      {'/orbbec_front_camera', '/orbbec_rear_camera'}),
     ('lidar_sensor', 'dual_udp_lidar.launch', {'/bluesea_node'}),
-    ('dexe_sensor_process', 'front_p2c.launch.py', {'/front_rgbd_to_pointcloud'}),
-    ('dexe_sensor_process', 'rear_p2c.launch.py', {'/rear_rgbd_to_pointcloud'}),
 ]
 
 
@@ -33,7 +31,9 @@ def spin_for(node, seconds):
 
 def check(node, seconds):
     config = yaml.safe_load((HERE / 'topics.yaml').read_text())
-    targets = [t for t in config['continuous'] if t.startswith(('/orbbec/', '/laser_scan/'))]
+    disabled = set(config.get('disabled', []))
+    targets = [t for t in config['continuous']
+               if t.startswith(('/orbbec/', '/laser_scan/')) and t not in disabled]
     graph = dict(node.get_topic_names_and_types())
     records = {t: {'count': 0, 'max_gap_sec': 0} for t in targets}
     subscriptions = []

@@ -149,17 +149,15 @@ runtime/venvs/mcap-collection/bin/python repos/w1_mcap_collection/audit_streams.
 
 ## 底盘传感器启动集成
 
-在 PC1 使用厂家节点生成采集器订阅的数据。四组原始启动命令如下：
+在 PC1 使用厂家节点生成采集器订阅的数据。相机和雷达启动命令如下：
 
 ```bash
 source /home/dexforce/.dex_env.sh
 ros2 launch dexe_sensors_launch orbbec_nodes.launch.py
 ros2 launch lidar_sensor dual_udp_lidar.launch
-ros2 launch dexe_sensor_process front_p2c.launch.py
-ros2 launch dexe_sensor_process rear_p2c.launch.py
 ```
 
-每条命令占用一个终端。相机组发布 RGB、深度和 CameraInfo，雷达组发布两路实体扫描，两个 p2c 组分别从深度生成三维原始点云。以上四组可由本工程的 sensors.sh serve 统一托管。
+相机组独立发布 JPEG、原生深度、CameraInfo 和深度单位，雷达组发布两路实体扫描。两组由 `sensors.sh serve` 托管。点云在离线解析阶段生成。
 
 安装服务后，启动 MCAP 服务会同时请求启动传感器服务。停止一段录制只关闭该段数据文件，传感器继续运行。开始录制前通过 check 核对十路都在接收；返回 0 表示测试窗口内每路至少收到一条，平均频率和最大间隔供现场判断。采集器仍允许缺流，并在 episode 中报告。
 
